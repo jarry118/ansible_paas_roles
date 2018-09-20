@@ -1,18 +1,18 @@
 ---
 
 # Check redis port status, Failure in port occupancy
-- name: check redis master and slave port status
-  shell: netstat -ntl | grep :{{item}} | wc -l
-  with_items:
-    - "{{master_port}}"
-    - "{{slave_port}}"
-  register: redis_port_binding_status
-  ignore_errors: True
+#- name: check redis master and slave port status
+#  shell: netstat -ntl | grep :{{item}} | wc -l
+#  with_items:
+#    - "{{master_port}}"
+#    - "{{slave_port}}"
+#  register: redis_port_binding_status
+#  ignore_errors: True
 
-- name: master or slave port required by Redis are alerdy in use
-  fail: msg="port({{item.item}}) required by Redis is alerdy in use!"
-  when: item.stdout != '0'
-  with_items: "{{redis_port_binding_status.results}}"
+#- name: master or slave port required by Redis are alerdy in use
+#  fail: msg="port({{item.item}}) required by Redis is alerdy in use!"
+#  when: item.stdout != '0'
+#  with_items: "{{redis_port_binding_status.results}}"
 
 # Install Redis
 - name: create redis install directory

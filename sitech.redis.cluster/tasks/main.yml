@@ -1,6 +1,6 @@
 ---
-- set_fact: redis_user="{{ redis_user|default(ansible_user_id) }}"
-- set_fact: redis_group="{{ redis_group|default(ansible_user_gid) }}"
+- set_fact: redis_user="{{ ansible_user_id }}"
+- set_fact: redis_group="{{ ansible_user_gid }}"
 - set_fact: home="{{ ansible_user_dir }}"
 
 - include: upload.yml

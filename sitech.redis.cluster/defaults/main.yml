@@ -2,9 +2,9 @@
 # defaults file for test-roles
 ## Installation options
 redis_version: 3.2.8
-redis_upload_dir : /redis
+redis_upload_dir : "{{ home }}"
 redis_cluster_dir: "{{redis_upload_dir}}/redis_cluster"
-#redis_install_dir: "{{redis_cluster_dir}}"
+redis_install_dir: "{{redis_cluster_dir}}"
 #redis_working_dir: "{{redis_install_dir}}/{{redis_temporary_param}}/working_dir"
 #redis_temporary_param: "redis-{{ redis_port }}"
 # Set this value to a local path of a tarball to use for installation instead of downloading
