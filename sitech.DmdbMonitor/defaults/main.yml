@@ -1,0 +1,6 @@
+---
+# defaults file for tesy.dm
+
+opening_upload_dir : /dmdb
+opening_dir: "{{opening_upload_dir}}/opening"
+
