@@ -1,0 +1,11 @@
+---
+- hosts: all 
+  gather_facts: true
+  vars:
+    - dynamic:
+        zookeeper_version: 3.4.12
+        client_port: 2181
+        zookeeper_cluster_ports: "2881:3881"
+        zookeeper_dir: /dmdb
+  roles:
+    - zookeeper
