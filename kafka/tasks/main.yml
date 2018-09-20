@@ -1,0 +1,34 @@
+---
+- set_fact: kafka_user="{{ kafka_user|default(ansible_user_id) }}"
+- set_fact: kafka_group="{{ kafka_group|default(ansible_user_gid) }}"
+
+- name: check if install_path directory exists
+  stat: path={{ install_path }}
+  register: insdir
+  changed_when: false
+  when: install_path != '""'
+
+- name: create install_path directory if it does not exist
+  file: path={{ install_path }} state=directory
+  when:
+    - install_path != '""'
+    - not insdir.stat.exists
+
+- name: create kafka log dir
+  file: path={{ install_path }}/kafka_{{ kafka_version }}/kafka-logs state=directory
+
+- name: unarchive kafka tarball
+  unarchive: src={{ kafka_package }} dest={{ install_path }}
+
+- name: Generate zookeeper_quorum setting in server.properties
+  shell: |
+    python -c "a={{ zookeeper_hosts }};b={{ zookeeper_clientport }};print(','.join([''.join([x, ':', str(b)]) for x in a]))"
+  register: myvar
+
+- set_fact: zookeeper_quorum="{{ myvar.stdout }}"
+
+- name: install configuration file
+  template: src=server.properties.j2 dest={{ install_path }}/kafka_{{ kafka_version }}/config/server.properties
+
+- name: start kafka
+  shell: source ~/.bash_profile;cd {{ install_path }}/kafka_{{ kafka_version }}/bin;./kafka-server-start.sh -daemon ../config/server.properties
