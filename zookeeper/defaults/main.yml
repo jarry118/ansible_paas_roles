@@ -1,0 +1,36 @@
+---
+zookeeper_version: 3.4.12
+zookeeper_tarball: "zookeeper-{{zookeeper_version}}.tar.gz"
+
+zookeeper_home: "{{ ansible_user_dir }}"
+
+client_port: 2181
+init_limit: 5
+sync_limit: 2
+tick_time: 2000
+zookeeper_autopurge_purgeInterval: 0
+zookeeper_autopurge_snapRetainCount: 10
+zookeeper_cluster_ports: "2888:3888"
+zookeeper_max_client_connections: 60
+
+zookeeper_dir: "{{ zookeeper_home }}/zookeeper-{{ zookeeper_version }}"
+data_dir: "{{ zookeeper_dir }}/data"
+log_dir: "{{ zookeeper_dir }}/log"
+zookeeper_conf_dir: "{{ zookeeper_dir }}/conf"
+zookeeper_tarball_dir: "{{ zookeeper_home }}"
+
+# Rolling file appender setttings
+zookeeper_rolling_log_file_max_size: 10MB
+zookeeper_max_rolling_log_file_count: 10
+
+zookeeper_hosts_hostname: "{{inventory_hostname}}"
+# List of dict (i.e. {zookeeper_hosts:[{host:,id:},{host:,id:},...]})
+zookeeper_hosts: "
+    {%- set ips = [] %}
+    {%- for host in groups['all'] %}
+    {{- ips.append(dict(id=loop.index, host=host, ip=hostvars[host]['ansible_default_ipv4'].address)) }}
+    {%- endfor %}
+    {{- ips -}}"
+
+# Controls Zookeeper myid generation
+zookeeper_force_myid: yes

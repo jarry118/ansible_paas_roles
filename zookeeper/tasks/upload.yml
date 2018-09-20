@@ -1,0 +1,24 @@
+---
+- name: copy tarball
+  unarchive: src={{ zookeeper_tarball }} dest={{ zookeeper_home }}
+
+- name: "Ensure the tarball dir exists at {{zookeeper_tarball_dir}}"
+  file: path={{zookeeper_tarball_dir}} state=directory
+
+- name: "Ensure the zookeeper dir exists at {{zookeeper_dir}}"
+  file: path={{zookeeper_dir}} state=directory
+
+- name: "Ensure the zookeeper data dir exists at {{data_dir}}"
+  file: path={{data_dir}} state=directory
+
+- name: "Ensure the zookeeper log dir exists at {{log_dir}}"
+  file: path={{log_dir}} state=directory
+
+- name: Change ownership on zookeeper directory
+  file: path={{zookeeper_dir}} state=directory owner={{ zookeeper_user }} owner={{ zookeeper_group }}
+
+- name: "Create zookeeper {{item}} directory"
+  file: path={{item}} state=directory owner={{ zookeeper_user }} owner={{ zookeeper_group }}
+  with_items:
+    - "{{data_dir}}"
+    - "{{log_dir}}"

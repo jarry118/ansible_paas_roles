@@ -1,0 +1,28 @@
+---
+- name: Write myid file
+  template: src=myid.j2 dest={{data_dir}}/myid owner={{ zookeeper_user }} owner={{ zookeeper_group }} force="{{ zookeeper_force_myid }}"
+
+- name: Configure zookeeper zoo.cfg
+  template: src=zoo.cfg.j2 dest={{ zookeeper_conf_dir }}/zoo.cfg owner={{ zookeeper_user }} owner={{ zookeeper_group }}
+
+- name: Add zookeeper bin dir to the PATH
+  copy: content="export PATH=$PATH:{{zookeeper_dir}}/bin" dest={{ zookeeper_home }}/.bash_profile mode=755
+
+#- name: Configure zookeeper-env.sh
+#  template: src=zookeeper-env.sh.j2 dest={{ zookeeper_conf_dir }}/conf/zookeeper-env.sh owner={{ zookeeper_user }} owner={{ zookeeper_group }}
+#  when: zookeeper_env is defined and zookeeper_env|length > 0
+
+- name: Update the log4j config with saner production values
+  template: src=log4j.properties.j2 dest={{ zookeeper_conf_dir }}/log4j.properties
+
+- name: Reflash all subdirectory's permission to 755
+  shell: "find {{ zookeeper_dir }} -type d|xargs -i chmod 755 {}"
+
+- name: Reflash all files' permission to 640
+  shell: "find {{ zookeeper_dir }} -type f|xargs -i chmod 640 {}"
+
+- name: Reflash all scripts's permission to 750
+  shell: "find {{ zookeeper_dir }} -type f|egrep '((.sh)|(.cmd)|(.rb))'|xargs -i chmod 750 {}"
+
+- name: Reflash all executable file's permission to 750
+  shell: "find {{ zookeeper_dir }}/bin -type f|xargs -i chmod 750 {}"

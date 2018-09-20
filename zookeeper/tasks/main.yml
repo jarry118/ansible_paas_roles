@@ -1,0 +1,9 @@
+---
+- set_fact: zookeeper_user="{{ zookeeper_user|default(ansible_user_id) }}"
+- set_fact: zookeeper_group="{{ zookeeper_group|default(ansible_user_gid) }}"
+
+- include_tasks: upload.yml
+
+- include_tasks: config.yml
+
+- include_tasks: start.yml
