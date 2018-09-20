@@ -1,0 +1,10 @@
+---
+
+- name: INFO_get redis cluster nodes info
+  shell: echo "cluster nodes"| ./redis-cli -c -h {{ ansible_default_ipv4['address'] }} -p {{master_port}} -a {{password}}
+  args:
+    chdir: "{{ redis_cluster_dir }}/redis-{{ master_port }}/bin"
+  register: nodeinfo
+  tags:
+    - nodeinfo
+  when: ansible_default_ipv4['address'] == cluster_ip|first

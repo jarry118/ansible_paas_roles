@@ -1,0 +1,36 @@
+---
+- name: create opening directory
+  file:
+    state: directory
+    path: "{{ opening_dir }}"
+
+- name: upload common.py
+  copy:
+    src: common.py
+    dest: "{{ opening_dir }}"
+
+- name: upload DmdbMonitor.py
+  copy:
+    src: DmdbMonitor.py
+    dest: "{{ opening_dir }}"
+
+- name: extrat python PATH
+  unarchive: 
+    src: python2.7.tar.gz
+    dest: "{{ opening_dir }}"
+
+- name: add python PATH
+  shell: |
+    echo "export PATH={{ opening_dir }}/python2.7/bin:$PATH:." >> .bash_profile
+    echo "export PATH={{ opening_dir }}/python2.7/module/bin:$PATH:." >> .bash_profile
+    echo "export PYTHONPATH={{ opening_dir }}/python2.7/module:{{ opening_dir }}/python2.7/module/lib/python2.7/site-packages:{{ opening_dir }}/python2.7/module/lib64/python2.7/site-packages" >> .bashrc
+
+
+- name: start paas_service
+  shell: |
+    source ~/.bash_profile
+    cd {{ opening_dir }}
+    export FLASK_APP=DmdbMonitor.py
+    nohup flask run --host=0.0.0.0 &
+
+

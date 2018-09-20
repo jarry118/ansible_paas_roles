@@ -1,0 +1,3 @@
+{% for host in groups['all'] %}
+{{ host }} ssh-rsa {{ hostvars[host]['ansible_ssh_host_key_rsa_public'] }}
+{% endfor %}

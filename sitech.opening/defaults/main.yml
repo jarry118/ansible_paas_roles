@@ -1,0 +1,8 @@
+---
+# defaults file for tesy.dm
+
+opening_upload_dir : /dmdb
+opening_dir: {{opening_upload_dir}}/opening
+opening_dependence_tarball: dependence.tar
+opening_service_tar: paas_service-0.1.tar.gz
+opening_config_tarball: {{paasshell}}.tar

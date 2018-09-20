@@ -1,0 +1,7 @@
+{% for ip in cluster_ip -%}
+{% set i =  loop.index %}
+{% if i > loop.length - 1  %}
+{% set i = 0 %}
+{% endif %}
+{{ip}}:{{master_port}}-{{cluster_ip[i]}}:{{slave_port}}
+{% endfor -%}

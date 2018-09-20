@@ -1,0 +1,5 @@
+---
+
+mysql_version: 5.7.21
+mysql_real_version: advanced-{{mysql_version}}-linux-glibc2.12-x86_64
+mysql_tarball: mysql-{{mysql_real_version}}.tar.gz
