@@ -1,0 +1,55 @@
+---
+
+# ansible-playbook -i sitech-redis-hosts_data sitech-redis.yml
+
+- name: install and start redis server
+  hosts: all
+  gather_facts: true
+  vars:
+    - fixed:
+        redis_bind: 0.0.0.0
+        upload: True
+        cluster: False
+      dynamic:
+        redis_version: 3.2.8
+        master_port: 6988
+        slave_port: 6900
+        cluster_ip: ['172.21.3.181','172.21.3.182','172.21.3.183']
+        redis_maxmemory: 4gb
+        redis_upload_dir: /redis
+        password: 123abc
+  roles:
+    - sitech.redis.cluster
+
+- name: redis cluster configuration
+  hosts: all
+  gather_facts: true
+  vars:
+    -  fixed:
+        slotnum: 16383
+        upload: False
+        cluster: True
+       dynamic:
+        master_port: 6988
+        slave_port: 6900
+        cluster_ip: ['172.21.3.181','172.21.3.182','172.21.3.183']
+        password: 123abc
+        redis_upload_dir: /redis
+  roles:
+    - sitech.redis.cluster
+
+- name: redis cluster info
+  hosts: all
+  gather_facts: no
+  vars:
+    - fixed:
+        upload: False
+        cluster: False
+      dynamic:
+        master_port: 6988
+        slave_port: 6900
+        password: 123abc
+        redis_upload_dir: /redis
+        cluster_ip: ['172.21.3.181','172.21.3.182','172.21.3.183']
+  roles:
+    - sitech.redis.cluster
