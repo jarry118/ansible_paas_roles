@@ -1,0 +1,60 @@
+---
+- name: create opening directory
+  file:
+    state: directory
+    path: "{{ opening_dir }}"
+
+- name: extract dependence tarball
+  unarchive:
+    src: "{{ opening_dependence_tarball }}"
+    dest: "{{ opening_dir }}"
+
+- name: extract openservice tarball
+  unarchive:
+    src: "{{ opening_service_tar }}"
+    dest: "{{ opening_dir }}"
+
+- name: extract paas shell
+  unarchive:
+    src: "{{ opening_config_tarball }}"
+    dest: "{{ opening_dir }}"
+
+- name: add PAAS_SHELL_PATH
+  shell: echo "export PAAS_SHELL_PATH={{ opening_dir }}/{{ paasshell }}" >> .bashrc
+
+- name: extrat python PATH
+  unarchive: 
+    src: python2.7.tar.gz
+    dest: "{{ opening_dir }}"
+
+- name: add python PATH
+  shell: |
+    echo "export PATH={{ opening_dir }}/python2.7/bin:$PATH:." >> .bashrc
+    echo "export PYTHONPATH={{ opening_dir }}/python2.7/module:{{ opening_dir }}/python2.7/module/lib/python2.7/site-packages:{{ opening_dir }}/python2.7/module/lib64/python2.7/site-packages" >> .bashrc
+
+- name: echo paaspath
+  shell: echo ${{paaspath}}
+  register: resource_path
+
+- name: start paas_service
+  shell: |
+    export LD_LIBRARY_PATH={{ resource_path.stdout }}/lib:\$LD_LIBRARY_PATH 
+    export export PATH={{ opening_dir }}/python2.7/bin:$PATH:.
+    export PYTHONPATH={{ opening_dir }}/python2.7/module:{{ opening_dir }}/python2.7/module/lib/python2.7/site-packages:{{ opening_dir }}/python2.7/module/lib64/python2.7/site-packages
+    nohup python api_server.py &
+  args:
+    chdir: "{{ opening_dir }}/paas_service-0.1/paas/"
+
+- name: connection paas_servic
+  get_url:
+    url: http://127.0.0.1:10811/v1/tenants
+    dest: "{{ opening_upload_dir }}"
+
+
+
+
+
+
+
+
+
