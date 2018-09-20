@@ -1,0 +1,71 @@
+---
+
+- name: create keepalived install directory
+  file:
+    path: "{{ keepalived_upload_dir }}"
+    state: directory
+
+- name: upload keepalived
+  copy:
+    src: "{{ keepalived_tarball }}"
+    dest: "{{ keepalived_upload_dir }}/keepalived-{{ keepalived_version }}.tar.gz"
+  when: keepalived_tarball|default(false)
+
+- name: upload keepalived notify shell
+  copy:
+    src: "{{ notify_shell }}"
+    dest: "{{ keepalived_upload_dir }}/{{notify_shell}}"
+
+- name: extract keepalived tarball
+  unarchive:
+    src: "{{ keepalived_upload_dir }}/keepalived-{{ keepalived_version }}.tar.gz"
+    dest: "{{ keepalived_upload_dir }}"
+    copy: no
+
+- name: insatll keepalived
+  shell: |
+    sudo ./configure --prefix=/usr/local/keepalived
+    sudo make
+    sudo make install
+    sudo cp /usr/local/keepalived/sbin/keepalived /usr/sbin
+    sudo cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig
+    sudo cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/init.d
+    sudo chmod 755 /etc/init.d/keepalived
+    sudo mkdir /etc/keepalived
+    sudo cp /usr/local/keepalived/etc/keepalived/keepalived.conf /etc/keepalived
+  args:
+    chdir: "{{ keepalived_upload_dir }}/keepalived-{{ keepalived_version }}"
+  #become: true
+  #become_method: sudo
+  #become_user: root
+
+
+- name: upload keepalived config file
+  template:
+    src: "keepalived.conf-{{type}}"
+    #dest: "/etc/keepalived/keepalived.conf"
+    dest: "{{ keepalived_upload_dir }}"
+    mode: 0640
+  #become: true
+  #become_method: sudo
+  #become_user: root
+
+- name: mv keepalived config file
+  shell: sudo mv "{{ keepalived_upload_dir }}/keepalived.conf-{{type}}" /etc/keepalived/keepalived.conf
+
+- name: lsmod | grep ip_vs
+  shell: |
+    sudo result=$(lsmod | grep ip_vs)
+    if [ "$result" = "" ]; then
+      sudo modprobe ip_vs
+      sudo modprobe ip_vs_wrr
+    fi
+  #become: true
+  #become_method: sudo
+  #become_user: root
+
+- name: start service
+  shell: sudo service keepalived start
+  #become: true
+  #become_method: sudo
+  #become_user: root

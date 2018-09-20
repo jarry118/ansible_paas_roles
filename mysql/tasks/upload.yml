@@ -1,0 +1,32 @@
+#- name: check mysql mysql_port status
+#  wait_for: port={{mysql_port}} timeout=1
+#  shell: netstat -ntl | grep :{{mysql_port}} | wc -l
+#  register: mysql_port_binding_status
+#  ignore_errors: True
+
+
+#- name: mysql_port required by mysql are alerdy in use
+#  fail: msg="port({{mysql_port}}) required by mysql is alerdy in use!"
+#  when: mysql_port_binding_status.stdout != '0'
+
+
+- name: upload mysql
+  copy:
+    src: "{{ mysql_tarball }}"
+    dest: "{{ mysql_dir }}/mysql-{{mysql_real_version}}.tar.gz"
+  when: mysql_tarball|default(false)
+
+- name: extract mysql tarball
+  unarchive:
+    src: "{{ mysql_dir }}/mysql-{{mysql_real_version}}.tar.gz"
+    dest: "{{ mysql_dir }}"
+    copy: no
+
+- name: ln -s mysql
+  shell: ln -s {{ mysql_dir }}/mysql-{{mysql_real_version}} mysql
+
+
+- name: create log dir
+  file:
+    state: directory
+    path: "{{ mysql_dir }}/mysql/log"

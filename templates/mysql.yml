@@ -1,0 +1,109 @@
+---
+
+# ansible-playbook -i sitech-redis-hosts_data sitech-redis.yml
+
+
+- name: install master mysql
+  hosts: all
+  gather_facts: true
+  vars:
+    - fixed:
+       mode: master_master
+       type: all
+    - dynamic:
+       mysql_dir: /dmdb
+       mysql_version: 5.7.21
+       mysql_port: 3306
+       master1: 172.21.3.181
+       master2: 172.21.3.182
+  roles:
+    - mysql
+
+- name: config master1 mysql
+  hosts: KEY@master1
+  gather_facts: true
+  vars:
+    - fixed:
+       mode: master_master
+       type: master1
+    - dynamic:
+       master1: 172.21.3.181
+       master2: 172.21.3.182
+       mysql_dir: /dmdb
+       mysql_port: 3306
+  roles:
+    - mysql
+
+- name: config master2 mysql
+  hosts: KEY@master2
+  gather_facts: true
+  vars:
+    - fixed:
+       mode: master_master
+       type: master2
+    - dynamic:
+       master1: 172.21.3.181
+       master2: 172.21.3.182
+       mysql_dir: /dmdb
+       mysql_port: 3306
+  roles:
+    - mysql
+
+
+- name: install keepalived in master
+  hosts: KEY@master1
+  gather_facts: true
+  vars:
+    - fixed:
+       type: master
+    - dynamic:
+       master1: 172.21.3.181
+       master2: 172.21.3.182
+       keepalived_upload_dir: /dmdb
+       mysql_port: 3306
+       virtual_ipaddress: 172.21.3.184
+  roles:
+    - keepalived
+
+- name: config master2 mysql
+  hosts: KEY@master2
+  gather_facts: true
+  vars:
+    - fixed:
+       type: backup
+    - dynamic:
+       master1: 172.21.3.181
+       master2: 172.21.3.182
+       keepalived_upload_dir: /dmdb
+       mysql_port: 3306
+       virtual_ipaddress: 172.21.3.184
+  roles:
+    - keepalived
+
+- name: configure the mysql-opening server
+  hosts: KEY@master1@master2 
+  gather_facts: true
+  vars:
+    - fixed:
+        paasshell: mysql
+        paaspath: MYSQL_PATH
+    - dynamic:
+        master1: 172.21.3.181
+        master2: 172.21.3.182
+        opening_upload_dir: /cloud
+  roles:
+    - sitech.opening
+
+- name: mysql cluster info
+  hosts: all
+  gather_facts: true
+  vars:
+    - fixed:
+       mode: info 
+       type: master2
+    - dynamic:
+       mysql_dir: /dmdb
+       master1: 172.21.3.181
+       master2: 172.21.3.182
+  roles:
+    - mysql

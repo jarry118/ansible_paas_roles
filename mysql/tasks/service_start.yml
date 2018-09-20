@@ -1,0 +1,50 @@
+---
+
+- name: upload mysql.server
+  template:
+    src: "my.cnf"
+    dest: "~/.my.cnf"
+    mode: 0640
+  delegate_to: "{{master1}}"
+  run_once: true
+
+- name: upload mysql-slave.server
+  template:
+    src: "my-slave.cnf"
+    dest: "~/.my.cnf"
+    mode: 0640
+  delegate_to: "{{master2}}"
+  run_once: true
+
+- name: create log directory if it does not exist
+  file:
+    state: directory
+    path: "{{ mysql_dir}}/mysql/log"
+
+- name: mysql initialize
+  shell: ./mysqld  --user={{user}} --initialize-insecure
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+
+- name: mysql start
+  shell: ./mysqld_safe  --defaults-file=~/.my.cnf --user={{user}} &
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+
+- name: export mysql path
+  shell: |
+      echo "PATH={{ mysql_dir }}/mysql/bin:$PATH" >> ~/.bash_profile
+      echo "export PATH" >> ~/.bash_profile
+      echo "export MYSQL_PATH={{ mysql_dir }}/mysql >> ~/.bash_profile"
+      source ~/.bash_profile
+  args:
+     executable: /bin/bash
+
+- name: export mysql path to bashrc
+  shell: |
+      echo "PATH={{ mysql_dir }}/mysql/bin:$PATH" >> ~/.bashrc
+      echo "export PATH" >> ~/.bashrc
+      echo "export MYSQL_PATH={{ mysql_dir }}/mysql >> ~/.bashrc"
+      source ~/.bashrc
+  args:
+     executable: /bin/bash

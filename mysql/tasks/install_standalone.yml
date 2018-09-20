@@ -1,0 +1,32 @@
+---
+
+- name: upload mysql.server
+  template:
+    src: "my.cnf"
+    dest: "~/.my.cnf"
+    mode: 0640
+
+- name: mysql initialize
+  shell: ./mysqld  --user={{user}} --initialize-insecure
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+
+- name: mysql start
+  shell: ./mysqld_safe  --defaults-file=~/.my.cnf --user={{user}} &
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+
+- name: mysql status check
+  shell: echo status | ./mysql -uroot
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+
+- name: export mysql path
+  shell: |
+      echo "PATH={{ mysql_dir }}/mysql/bin:$PATH" >> ~/.bash_profile
+      echo "export PATH" >> ~/.bash_profile
+      echo "export MYSQL_PATH={{ mysql_dir }}/mysql >>~/.bash_profile"
+      source ~/.bash_profile
+
+
+

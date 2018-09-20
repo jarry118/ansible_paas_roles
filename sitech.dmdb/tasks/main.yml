@@ -1,0 +1,7 @@
+---
+- set_fact: dmdb_user="{{ ansible_user_id }}"
+- set_fact: dmdb_group="{{ ansible_user_gid }}"
+- set_fact: home="{{ ansible_user_dir }}"
+
+# tasks file for tesy.dm
+- import_tasks: upload.yml

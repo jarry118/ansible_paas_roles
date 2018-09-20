@@ -1,0 +1,29 @@
+---
+- set_fact: user="{{ ansible_user_id }}"
+- set_fact: group="{{ ansible_user_gid }}"
+
+# tasks file for test-roles
+- include_tasks: upload.yml
+  when:
+    - "mode == 'master_master'"
+    - "type == 'all'"
+
+- include_tasks: service_start.yml
+  when:
+    - "mode == 'master_master'"
+    - "type == 'all'"
+
+- include_tasks: master1_master.yml
+  when:
+    - "mode == 'master_master'"
+    - "type == 'master1'"
+
+- include_tasks: master2_master.yml
+  when:
+    - "mode == 'master_master'"
+    - "type == 'master2'"
+
+- include_tasks: clusterInfo.yml
+  when:
+    - "mode == 'info'"
+    - "type == 'master2'"

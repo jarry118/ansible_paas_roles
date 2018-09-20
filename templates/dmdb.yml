@@ -1,0 +1,53 @@
+---
+
+# ansible-playbook -i sitech-redis-hosts_data sitech-redis.yml
+
+- name: configure the rootserver dmdb server
+  hosts: all
+  gather_facts: true 
+  vars:
+    - dynamic:
+        dmdb_version: 5.1.0.0
+        install_path: /dmdb/dmdb_test
+        mem: 500
+        dmdb_port: 5885
+        main_port: 3910
+        main_copy_port: 3850
+        bak1_port: 4910
+        bak1_copy_port: 4850
+        bak2_port: 5910
+        bak2_copy_port: 5850
+        dmdb_host:
+          - 172.21.3.164
+          - 172.21.3.165
+          - 172.21.3.166
+        user: dmdb
+        root_server:
+          - 172.21.3.165
+  roles:
+    - sitech.dmdb
+
+- name: configure the rootserver dmdb-opening server
+  hosts: KEY@root_server
+  gather_facts: no
+  vars:
+    - fixed:
+        paasshell: dmdb
+        paaspath: DSC_PATH
+    - dynamic: 
+        opening_upload_dir: /dmdb
+        root_server:
+          - 172.21.3.165
+  roles:
+    - sitech.opening
+
+- name: configure the rootserver dmdb-DmdbMonitor server
+  hosts: KEY@root_server
+  gather_facts: no
+  vars:
+    - dynamic:
+        opening_upload_dir: /dmdb
+        root_server:
+          - 172.21.3.165
+  roles:
+    - sitech.DmdbMonitor

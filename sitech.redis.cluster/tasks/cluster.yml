@@ -1,0 +1,46 @@
+---
+- name: install redis in others nodes
+  shell: sh redis_cluster_setup.sh {{ redis_upload_dir }}
+  args:
+    chdir: "{{ redis_upload_dir }}/redis"
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: start redis cluster
+  shell: sh redis_cluster_start.sh {{ redis_cluster_dir }}
+  args:
+    chdir: "{{ redis_upload_dir }}/redis"
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: cluster to meet
+  shell: sh rInit.sh "{{ redis_cluster_dir }}" {{ slotnum }} {{ password }}
+  args:
+    chdir: "{{ redis_upload_dir }}/redis"
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: addslot to cluster
+  shell: |
+    cluster_ip="{{cluster_ip}}"
+    cluster_ip_for_shell=$(echo "$cluster_ip" | sed "s|\[||g" | sed "s|'||g" |sed  "s|\]||g" |sed "s| ||g" | sed "s|u||g")
+    IFS=',' masters=($cluster_ip_for_shell)
+    num="${{"{"}}#masters[@]}"
+    let n={{slotnum}}/num+1
+    i=0
+    for((m=0;m<$num;m++))
+    do
+      while(($i<$n))
+        do
+          let x=m*n+i
+          if(($x>{{slotnum}}))
+          then
+          break
+          fi
+          ./redis-cli -c -h ${masters[$m]}  -p {{master_port}} -a {{password}} cluster addslots $x
+          let i++
+        done;
+        let i=0
+      done
+  args:
+    chdir: "{{ redis_cluster_dir }}/redis-{{ master_port }}/bin"
+    executable: /bin/bash
+  ignore_errors: True
+  when: ansible_default_ipv4['address'] == cluster_ip|first
