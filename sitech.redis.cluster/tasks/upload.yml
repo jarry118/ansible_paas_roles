@@ -1,0 +1,115 @@
+---
+
+# Check redis port status, Failure in port occupancy
+- name: check redis master and slave port status
+  shell: netstat -ntl | grep :{{item}} | wc -l
+  with_items:
+    - "{{master_port}}"
+    - "{{slave_port}}"
+  register: redis_port_binding_status
+  ignore_errors: True
+
+- name: master or slave port required by Redis are alerdy in use
+  fail: msg="port({{item.item}}) required by Redis is alerdy in use!"
+  when: item.stdout != '0'
+  with_items: "{{redis_port_binding_status.results}}"
+
+# Install Redis
+- name: create redis install directory
+  file:
+    path: "{{ redis_cluster_dir }}"
+    state: directory
+
+#- name: extract redis tarball
+#  unarchive:
+#    src: "{{ redis_tarball }}"
+#    dest: "{{ redis_upload_dir }}"
+#    copy: no
+#  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: copy redis.tar.gz to remote server
+  copy: src=redis-{{ redis_version }}.tar.gz dest={{ redis_upload_dir }}
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: 解压redis
+  shell: chdir={{redis_upload_dir }} tar xf redis-{{ redis_version }}.tar.gz
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: chmod bin
+  shell: chmod u+x {{ redis_upload_dir }}/redis/redis/bin/*
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: export redis path
+  shell: |
+      echo "export REDIS_HOME={{redis_upload_dir }}/redis/redis" >> ~/.bash_profile
+      echo "export PATH=$PATH:$REDIS_HOME/bin" >> ~/.bash_profile
+      source ~/.bash_profile
+  args:
+     executable: /bin/bash
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: config configure.info
+  template:
+    src: "configure.info"
+    dest: "{{ redis_upload_dir }}/redis/configure.info"
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: Check public key
+  shell: "ls {{ home }}/.ssh|grep '.pub' |wc -l"
+  register: key_exist
+  ignore_errors: true
+
+- name: Generate public key
+  user:
+    name: "{{ redis_user }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+  when: "key_exist.stdout == '0'"
+
+- name: Get public from redis nodes
+  fetch:
+    src: "{{ home }}/.ssh/id_rsa.pub"
+    dest: "/tmp/id_{{ ansible_host }}.pub"
+    flat: yes
+
+- name: Add redis public key for every node
+  authorized_key:
+    user="{{ redis_user }}"
+    key="{{ lookup('file', '/tmp/id_{{ item }}.pub') }}"
+  with_items: "{{ groups['all'] }}"
+
+- name: Remove public Key on ansible master
+  shell: "rm -rf /tmp/id_{{ item }}.pub"
+  connection: local
+  with_items: "{{ groups['all'] }}"
+
+- name: Create known_hosts
+  template: src=known_hosts dest={{ home }}/.ssh/known_hosts owner={{ redis_user }} group={{ redis_group }} mode=0644
+
+- name: cp to folder_port
+  command: cp -R {{ redis_upload_dir }}/redis/redis {{ redis_cluster_dir }}/redis-{{ item }}
+  with_items:
+    - "{{master_port}}"
+    - "{{slave_port}}"
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: create redis config file
+  template:
+    src: "redis.conf.j2.{{ item.key }}"
+    dest: "{{ redis_cluster_dir }}/redis-{{ item.value.port }}/conf/redis-{{ item.value.port }}.conf"
+    mode: 0640
+  with_dict: {'master':{'port':"{{master_port}}"},'slave':{'port':"{{slave_port}}"}}
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+- name: create redis common config file
+  template:
+    src: "redis-common.conf"
+    dest: "{{ redis_cluster_dir }}/redis-{{ item.value.port }}/conf/redis-common.conf"
+    mode: 0640
+  with_dict: {'master':{'port':"{{master_port}}"},'slave':{'port':"{{slave_port}}"}}
+  when: ansible_default_ipv4['address'] == cluster_ip|first
+
+#- name: chmod bin
+#  shell: chmod u+x {{ redis_upload_dir }}/redis/redis-{{ item.value.port }}/bin/*
+#  with_dict: {'master':{'port':"{{master_port}}"},'slave':{'port':"{{slave_port}}"}}
