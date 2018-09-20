@@ -1,0 +1,33 @@
+---
+# file: tasks/set-role-variables.yml
+# set necessary role variables.
+#
+
+- name: set general internal vars
+  set_fact:
+    jdk_version: "1.{{ java_version }}.0_{{ java_subversion }}"
+
+
+#
+# platform-specific variables
+#
+
+- name: set java architecture
+  set_fact:
+    jdk_arch: "{{ 'i586'  if ansible_architecture == 'i386' else 'x64' }}"
+
+- name: set java OS for Linux
+  set_fact:
+    jdk_os: linux
+  when: ansible_system == 'Linux'
+
+#
+# version-specific variables
+#
+- name: set internal vars for jdk_version_detail 
+  set_fact:
+    jdk_version_detail: "{{ java_version }}u{{ java_subversion }}"
+
+- name: compose filename, if necessary
+  set_fact:
+    jdk_tarball_file: "jdk-{{ java_version }}u{{ java_subversion }}-{{ jdk_os }}-{{ jdk_arch }}"

@@ -1,0 +1,16 @@
+---
+# defaults file for tesy.dm
+java_version: 8
+java_subversion: 112
+java_install_path: /dmdb/java
+#java_download_from_oracle: false
+#java_remove_download: true
+java_install_jce: false
+#java_set_javahome: false
+
+
+ansible_architecture: i586
+ansible_system: Linux
+
+
+
