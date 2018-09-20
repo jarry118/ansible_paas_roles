@@ -1,0 +1,84 @@
+---
+
+#- name: upload mysql.server
+#  template:
+#    src: "my.cnf"
+#    dest: "~/.my.cnf"
+#    mode: 0640
+#
+#- name: mysql initialize
+#  shell: ./mysqld  --user={{user}} --initialize-insecure
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#
+#- name: mysql start
+#  shell: ./mysqld_safe  --defaults-file=~/.my.cnf --user={{user}} &
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#
+#- name: mysql status check
+#  shell: echo status | ./mysql -uroot
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#
+#- name: export mysql path
+#  shell: |
+#      echo "PATH={{ mysql_dir }}/mysql/bin:$PATH" >> ~/.bash_profile
+#      echo "export PATH" >> ~/.bash_profile
+#      echo "export MYSQL_PATH={{ mysql_dir }}/mysql >>~/.bash_profile"
+#      source ~/.bash_profile
+#  args:
+#     executable: /bin/bash
+#
+#
+##CREATE USER 'repl'@'%' IDENTIFIED BY 'slavepass';
+##grant replication slave on *.* to 'rep1'@'%'
+##show MASTER STATUS;
+#- name: create replication user
+#  shell: echo "CREATE USER 'repluser'@'%' IDENTIFIED BY 'slavepass'" | ./mysql -uroot
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#  when: {{type}} = master
+#
+#
+#- name: grant replication slave
+#  shell: echo "grant replication slave on *.* to 'repluser'@'{{item}}'" | ./mysql -uroot
+#  with_items:
+#    - "{{slave_ip}}"
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#  when: {{type}} = 'master'
+#
+#- name: flush privileges
+#  shell: echo "flush privileges" | ./mysql -uroot
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#  when: {{type}} = master
+#
+##change master to master_host='172.21.3.181',master_user='repl',master_password='slavepass'
+#- name: set master info to slave
+#  shell: echo "change master to master_host={{master_ip}},master_user='repluser',master_password='slavepass'" | ./mysql -uroot
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#  when: {{type}} = 'slave'
+#
+#- name: start slave
+#  shell: echo "start slave" | ./mysql -uroot
+#  args:
+#    chdir: "{{ mysql_dir }}/mysql/bin"
+#  when: {{type}} = 'slave'
+#  ignore_errors: True
+
+
+- name: check slave status
+  shell: echo "show slave status" | ./mysql -uroot
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+  register: slave_status
+  asyn: 10
+
+
+
+- name: judge status info
+  fail: msg = "slave is not start right"
+  when: slave_status != 0

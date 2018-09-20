@@ -1,0 +1,25 @@
+---
+- name: INFO_get mysql cluster nodes info
+  shell: |
+    F_PATH="{{ mysql_dir }}"
+    FS_RESULT="/"
+    FS_LENGTH=0
+    for fs in `mount -l |awk '{print $3}'`
+    do
+       if [[ $F_PATH =~ $fs ]]
+       then
+           CURRENT_FS_LENGTH="${{"{"}}#fs}"
+           if [ $CURRENT_FS_LENGTH -gt $FS_LENGTH ]; then
+              FS_LENGTH="${{"{"}}#fs}"
+              FS_RESULT=$fs
+           fi
+       fi
+    done
+    size=`df -h|grep -w "$FS_RESULT"|awk '{print $(NF-3)}'`
+    echo "$FS_RESULT" "$size"
+  args:
+    executable: /bin/bash
+  register: nodeinfo
+  when: ansible_default_ipv4['address'] == master2
+  tags:
+    - nodeinfo

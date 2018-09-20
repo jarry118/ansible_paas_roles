@@ -1,0 +1,46 @@
+---
+
+- name: grant replication slave
+  shell: echo "grant replication slave on *.* to 'repluser'@'{{master1}}' IDENTIFIED BY 'slavepass'" | ./mysql -uroot
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+
+
+- name: get master1 file and position info
+  shell: |
+    master_info=$(echo "show master status\G"  | ./mysql -uroot)
+    masters=($master_info)
+    mnum="${{"{"}}#masters[@]}"
+    filenum=0
+    position=0
+    for((i=0;i<mnum;i++))
+      do
+        if [ "File:" == "${masters[$i]}" ]
+         then filenum=$(($i+1))
+        elif [ "Position:" == "${masters[$i]}" ]
+         then position=$(($i+1))
+        fi
+      done
+    echo ${masters[$filenum]}
+    echo ${masters[$position]}
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+  register: loginfo
+
+
+- name: config master2 into to master1
+  shell: |
+    loginfo="{{loginfo.stdout_lines}}"
+    loginfo_forshell=$(echo "$loginfo" | sed "s|\[||g" | sed "s|'||g" |sed  "s|\]||g" |sed "s| ||g" | sed "s|u||g")
+    OLD_IFS="$IFS"
+    IFS=","
+    infos=($loginfo_forshell)
+    IFS="$OLD_IFS"
+    echo "change master to master_host='{{master2}}',master_port={{mysql_port}},master_user='repluser',master_password='slavepass',master_log_file='${infos[0]}',master_log_pos=${infos[1]}" | ./mysql -uroot
+    echo " start slave"  | ./mysql -uroot
+  args:
+    chdir: "{{ mysql_dir }}/mysql/bin"
+  delegate_to: "{{master1}}"
+  run_once: true
+
+
