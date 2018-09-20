@@ -1,6 +1,6 @@
 ---
-- set_fact: kafka_user="{{ kafka_user|default(ansible_user_id) }}"
-- set_fact: kafka_group="{{ kafka_group|default(ansible_user_gid) }}"
+- set_fact: kafka_user="{{ ansible_user_id }}"
+- set_fact: kafka_group="{{ ansible_user_gid }}"
 
 - name: check if install_path directory exists
   stat: path={{ install_path }}
