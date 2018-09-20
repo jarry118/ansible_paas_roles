@@ -1,0 +1,36 @@
+---
+
+
+
+- name: check PATH resource_path exists
+  shell: cat .bashrc |grep "{{ install_path }}/bin:{{ install_path }}/MDB/bin"
+  register: resource_path
+  ignore_errors: True
+
+
+
+- name: add PATH1
+  shell: echo "PATH={{ install_path }}/bin:{{ install_path }}/MDB/bin:$PATH" >> .bashrc
+  when: resource_path.stdout ==''
+
+
+- name: add PATH2
+  shell: echo "export PATH" >> .bashrc
+  when: resource_path.stdout ==''
+
+
+- name: add DSC_PATH
+  shell: echo "export DSC_PATH={{ install_path }}" >> .bashrc
+  when: resource_path.stdout ==''
+
+
+- name: echo path
+  shell: echo $PATH
+
+- name: echo DSC_PATH
+  shell: echo $DSC_PATH
+
+
+
+
+

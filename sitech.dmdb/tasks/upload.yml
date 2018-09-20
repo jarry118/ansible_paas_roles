@@ -1,0 +1,167 @@
+---
+- name: Check public key
+  shell: "ls {{ home }}/.ssh|grep '.pub' |wc -l"
+  register: key_exist
+  ignore_errors: true
+
+- name: Generate public key
+  user:
+    name: "{{ dmdb_user }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+  when: "key_exist.stdout == '0'"
+
+- name: Get public from dmdb nodes
+  fetch:
+    src: "{{ home }}/.ssh/id_rsa.pub"
+    dest: "/tmp/id_{{ ansible_host }}.pub"
+    flat: yes
+
+- name: Add dmdb public key for every node
+  authorized_key:
+    user="{{ dmdb_user }}"
+    key="{{ lookup('file', '/tmp/id_{{ item }}.pub') }}"
+  with_items: "{{ groups['all'] }}"
+
+- name: Remove public Key on ansible master
+  shell: "rm -rf /tmp/id_{{ item }}.pub"
+  connection: local
+  with_items: "{{ groups['all'] }}"
+
+- name: Create known_hosts
+  template: src=known_hosts dest={{ home }}/.ssh/known_hosts owner={{ dmdb_user }} group={{ dmdb_group }} mode=0644
+
+
+- name: check if install_path directory exists
+  stat:
+    path: "{{ install_path }}"
+  register: logdir
+  changed_when: false
+  when: install_path != '""'
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: create install_path directory if it does not exist
+  file:
+    state: directory
+    path: "{{ install_path }}"
+  when:
+    - install_path != '""'
+    - not logdir.stat.exists
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first    
+
+- name: upload dmdb tarball
+  copy:
+    src: "{{ dmdb_tarball }}"
+    dest: "{{ dmdb_upload_dir }}/{{ dmdb_tarball }}"
+  when: dmdb_tarball|default(false)
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: extract dmdb tarball
+  unarchive:
+    src: "{{ dmdb_upload_dir }}/{{ dmdb_tarball }}"
+    dest: "{{ dmdb_upload_dir }}"
+    copy: no
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first    
+
+- name: Move to folder_port
+  command: mv {{ dmdb_upload_dir }}/DMDB_{{dmdb_version}} {{ dmdb_install_dir }}
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: create dmdb config file
+  template:
+    src: node_list.txt.j2
+    dest: "{{ dmdb_install_dir }}/node_list.txt"
+    mode: 0640
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first    
+
+- name: execute INSTALL.sh
+  shell: sh INSTALL.sh p 1 > DMDB_LOG.log
+  args:
+    chdir: "{{dmdb_install_dir}}/"
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: set ERR_LOG
+  shell: cat {{dmdb_install_dir}}/DMDB_LOG.log | grep "Error" | grep "MDB-" | grep "权限"
+  register: dmdb_log
+  ignore_errors: True
+  failed_when: dmdb_log.stdout != ''
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+
+- name: check PATH resource_path exists
+  shell: cat .bashrc |grep "{{ install_path }}/bin:{{ install_path }}/MDB/bin"
+  register: resource_path
+  ignore_errors: True
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+
+
+- name: add PATH1
+  shell: echo "PATH={{ install_path }}/bin:{{ install_path }}/MDB/bin:$PATH" >> .bashrc
+  when: resource_path.stdout ==''
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+
+- name: add PATH2
+  shell: echo "export PATH" >> .bashrc
+  when: resource_path.stdout ==''
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+
+- name: add DSC_PATH
+  shell: echo "export DSC_PATH={{ install_path }}" >> .bashrc
+  when: resource_path.stdout ==''
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+
+- name: echo path
+  shell: echo $PATH
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: echo DSC_PATH
+  shell: echo $DSC_PATH
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: create license directory
+  file:
+    state: directory
+    path: "{{ install_path }}/getlice"
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: unarchive GetLice.tar
+  unarchive: src=GetLice.tar dest="{{ install_path }}/getlice"
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: compile GetLice
+  shell: sh mk.sh
+  args:
+    chdir: "{{ install_path }}/getlice" 
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: get hostid
+  shell: dmdb_hostkey
+  register: hostid
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: get license
+  shell: ./GetLice {{ hostid.stdout }} {{ dmdb_version }}
+  register: dmdb_license
+  args:
+    chdir: "{{ install_path }}/getlice"
+  ignore_errors: True
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: set License
+  shell: dmdb_param set rootserver license={{ dmdb_license.stdout }}
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: dmdb_run start
+  shell: dmdb_run start
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first
+
+- name: INFO_get dmdb cluster nodes info
+  shell: |
+    export LD_LIBRARY_PATH={{ install_path }}/lib:$LD_LIBRARY_PATH
+    dmdb_status -v
+  when: ansible_default_ipv4['address'] == {{ root_server }}|first

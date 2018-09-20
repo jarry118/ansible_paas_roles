@@ -1,0 +1,38 @@
+{% set navigation = [] %}
+{% for host in dmdb_host -%}
+H0{{loop.index}}        {{host}}   {{user}}       {{install_path}}    
+{%- set item = (host, loop.index) %}
+{{navigation.append(item)}}
+{% endfor %}
+
+RootServer 
+{%- for node in root_server -%}
+{%- if loop.first  -%}
+	{%- for h,i in navigation -%}
+		{%- if node == h  %}
+ H0{{i}}
+		{%- endif -%}
+	{%- endfor -%}
+{%- else -%}
+	{%- for h,i in navigation -%}
+		{%- if node == h  -%}
+			:H0{{i}}
+		{%- endif -%}
+	{%- endfor -%}
+{%- endif -%}
+{%- endfor %}
+ {{dmdb_port}}
+ 
+{% for list in dmdb_host -%}
+{% set bak1 =  loop.index + 1 %}
+{% if bak1 > loop.length  %}
+{% set bak1 =  1 %}
+{% endif %}
+{% set bak2 =  bak1 + 1 %}
+{% if bak2 > loop.length  %}
+{% set bak2 =  1 %}
+{% endif %}
+db0{{loop.index}}    {{mem}}      H0{{loop.index}}        {{main_port}}        {{main_copy_port}}        H0{{bak1}}:H0{{bak2}}        {{bak1_port}}:{{bak2_port}}         {{bak1_copy_port}}:{{bak2_copy_port}}
+{% endfor -%}
+
+ 
