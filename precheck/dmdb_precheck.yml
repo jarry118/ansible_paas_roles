@@ -1,0 +1,22 @@
+---
+- hosts: all 
+  gather_facts: no
+  vars:
+    - fixed:
+        dmdb_port: 5885
+  tasks:
+  - name: check ncurses_devel
+    shell: rpm -qa|grep ncurses-devel
+    ignore_errors: True
+  
+  - name: check gcc_gcc_c++
+    shell: rpm -qa|grep gcc 
+    ignore_errors: True
+
+  - name: check make
+    shell: rpm -qa|grep make
+    ignore_errors: True
+ 
+  - name: check dmdb_port
+    wait_for: port={{ dmdb_port }} timeout=1
+    ignore_errors: True
