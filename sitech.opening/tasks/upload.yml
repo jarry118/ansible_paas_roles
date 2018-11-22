@@ -29,7 +29,7 @@
 
 - name: add python PATH
   shell: |
-    echo "export PATH={{ opening_dir }}/python2.7/bin:$PATH:." >> .bashrc
+    echo "export PATH={{ opening_dir }}/python2.7/bin:\$PATH:." >> .bashrc
     echo "export PYTHONPATH={{ opening_dir }}/python2.7/module:{{ opening_dir }}/python2.7/module/lib/python2.7/site-packages:{{ opening_dir }}/python2.7/module/lib64/python2.7/site-packages" >> .bashrc
 
 - name: echo paaspath

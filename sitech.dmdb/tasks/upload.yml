@@ -98,7 +98,7 @@
 
 
 - name: add PATH1
-  shell: echo "PATH={{ install_path }}/bin:{{ install_path }}/MDB/bin:$PATH" >> .bashrc
+  shell: echo "PATH={{ install_path }}/bin:{{ install_path }}/MDB/bin:\$PATH" >> .bashrc
   when: resource_path.stdout ==''
   when: ansible_default_ipv4['address'] == {{ root_server }}|first
 
