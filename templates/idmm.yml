@@ -1,0 +1,100 @@
+- name: configure the rootserver idmm server
+  hosts: KEY@broker_ip
+  gather_facts: True
+  vars:
+    - fixed:
+        mode : broker
+    - dynamic:
+        install_path: /home/idmm/idmm-test
+        idmm_version: 3.0.2
+        java_home: /home/idmm/jdk1.7.0_60
+        broker_listen_port: 4100
+        broker_http_listen_port: 44100
+        broker_conn_mysql_ip: 10.243.29.78
+        broker_conn_mysql_port: 3306
+        broker_conn_mysql_dbname: idmm
+        broker_conn_mysql_username: idmm
+        broker_conn_mysql_password: idmm
+        zookeeper_addrress: 10.243.29.80:2181,10.243.29.111:2181,10.243.29.129:2181
+        broker_ip: ['10.243.29.80','10.243.29.111','10.243.29.129']
+  roles:
+    - sitech.idmm
+
+- name: init db
+  hosts: KEY@manager_ip
+  gather_facts: False
+  vars:
+    - fixed:
+        mode: dbinit
+    - dynamic:
+        install_path: /home/idmm/idmm-test      
+        broker_conn_mysql_ip: 10.243.29.78
+        broker_conn_mysql_port: 3306
+        broker_conn_mysql_dbname: idmm
+        broker_conn_mysql_username: idmm
+        broker_conn_mysql_password: idmm
+        zookeeper_addrress: 10.243.29.80:2181,10.243.29.111:2181,10.243.29.129:2181
+        manager_ip: ['10.243.29.111']
+  roles:
+    - sitech.idmm
+
+- name: start broker
+  hosts: KEY@broker_ip
+  gather_facts: True
+  vars:
+    - fixed:
+        mode: start_broker
+    - dynamic:
+        install_path: /home/idmm/idmm-test
+        broker_ip: ['10.243.29.80','10.243.29.111','10.243.29.129']
+  roles:
+    - sitech.idmm
+
+- name: create idmm version in zk
+  hosts: KEY@manager_ip
+  gather_facts: False
+  vars:
+    - fixed:
+        mode: create_version_inzk     
+    - dynamic:
+        install_path: /home/idmm/idmm-test
+        zookeeper_addrress: 10.243.29.80:2181,10.243.29.111:2181,10.243.29.129:2181
+        manager_ip: ['10.243.29.111']
+  roles:
+    - sitech.idmm
+
+- name: start ble
+  hosts: KEY@broker_ip
+  gather_facts: True
+  vars:
+    - fixed:
+        mode: start_ble
+    - dynamic:
+        install_path: /home/idmm/idmm-test
+        broker_ip: ['10.243.29.80','10.243.29.111','10.243.29.129']
+  roles:
+    - sitech.idmm
+
+- name: start manager
+  hosts: KEY@manager_ip
+  gather_facts: False
+  vars:
+    - fixed:
+        mode: start_manager
+    - dynamic:
+        install_path: /home/idmm/idmm-test
+        manager_ip: ['10.243.29.111']
+  roles:
+    - sitech.idmm
+
+- name: start web
+  hosts: KEY@web_ip
+  gather_facts: False
+  vars:
+    - fixed:
+        mode: start_web
+    - dynamic:
+        install_path: /home/idmm/idmm-test
+        web_ip: ['10.243.29.111']
+  roles:
+    - sitech.idmm

@@ -1,0 +1,18 @@
+export JAVA_HOME={{ java_home }}
+export HADOOP_HOME={{ hadoop_home }}
+export E3_INFO_HOME={{ e3_info_home }}
+export HBASE_HOME={{ hbase_home }}
+
+export HBASE_PID_DIR={{ hbase_pid_home }}
+export HBASE_LOG_DIR={{ hbase_log_home }}
+export HBASE_HEAPSIZE={{ ansible_memtotal_mb//4 }}
+export HBASE_OPTS="-XX:+UseConcMarkSweepGC  -XX:ErrorFile=/e3base/e3-info/hbase/logs/hs_err_pid%p.log"
+export HBASE_MASTER_OPTS="-Xmx{{ ansible_memtotal_mb//4 }}m"
+export HBASE_MASTER_OPTS="$HBASE_MASTER_OPTS $HBASE_JMX_BASE -Xmx4000m -Xms4000m -Xmn1500m -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70 -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=14005 -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false"
+export HBASE_THRIFT_OPTS="$HBASE_THRIFT_OPTS -Xmx4g -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=14006 -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false"
+export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS $HBASE_JMX_BASE -server -Xmx24576m -Xms24566m -Xmn2458m -XX:SurvivorRatio=1 -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+CMSParallelRemarkEnabled  -XX:+UseCMSCompactAtFullCollection  -XX:+UseCMSInitiatingOccupancyOnly -XX:-DisableExplicitGC -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=14007 -Dcom.sun.management.jmxremote.ssl=false  -Dcom.sun.management.jmxremote.authenticate=false"
+export HBASE_REGIONSERVERS=${HBASE_HOME}/conf/regionservers
+export HBASE_BACKUP_MASTERS=${HBASE_HOME}/conf/backup-masters
+export HBASE_MANAGES_ZK=false
+export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native/:$HADOOP_HOME/share/hadoop/common/lib:$LD_LIBRARY_PATH
+export HBASE_LIBRARY_PATH=$HBASE_HOME/lib/native:$HBASE_HOME/lib:$HBASE_LIBRARY_PATH

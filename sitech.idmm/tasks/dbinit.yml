@@ -1,0 +1,17 @@
+---
+
+
+
+- name: check if mysql_path directory exists
+  stat:
+    path: "{{ mysql_path }}"
+  register: logdir
+  changed_when: false
+  when: mysql_path != '""'
+
+- name: init db of broker tables
+  shell: "source ~/.bash_profile;mysql -h{{ broker_conn_mysql_ip }} -D{{ broker_conn_mysql_dbname }} -u{{ broker_conn_mysql_username }} -p{{ broker_conn_mysql_password }} -e 'source {{ install_path }}/soft/create.sql'"
+
+- name: init db of broker tables
+  shell: "source ~/.bash_profile;mysql -h{{ broker_conn_mysql_ip }} -D{{ broker_conn_mysql_dbname }} -u{{ broker_conn_mysql_username }} -p{{ broker_conn_mysql_password }} -e 'source {{ install_path }}/soft/init.sql'"
+

@@ -1,0 +1,21 @@
+---
+- name: Create hbase_pid_home
+  file: path={{ hbase_pid_home }} owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+
+- name: Create hbase_log_home
+  file: path={{ hbase_log_home }} owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+
+- name: Reflash all under {{ hbase_home }} owner and group to {{ hadoop_user }}:{{ hadoop_group }} and permission to 755
+  file: path={{ hbase_home }} mode=755 owner={{ hadoop_user }} group={{ hadoop_group }} recurse=yes
+
+- name: Reflash all subdirectory's permission to 755
+  shell: "find {{ hbase_home }} -type d|xargs -i chmod 755 {}"
+
+- name: Reflash all files' permission to 640
+  shell: "find {{ hbase_home }} -type f|xargs -i chmod 640 {}"
+
+- name: Reflash all scripts's permission to 750
+  shell: "find {{ hbase_home }} -type f|egrep '((.sh)|(.cmd)|(.rb))'|xargs -i chmod 750 {}"
+
+- name: Reflash all executable file's permission to 750
+  shell: "find {{ hbase_home }}/bin -type f|xargs -i chmod 750 {}"

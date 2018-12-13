@@ -1,0 +1,23 @@
+netty.listen.hostname={{ ansible_default_ipv4.address }}
+netty.listen.port= {{ broker_listen_port }}
+netty.http.listen.port={{ broker_http_listen_port }}
+
+netty.bossCount=1
+netty.workerCount=300
+netty.executorCount=300
+
+jdbc.driverClassName=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://{{ broker_conn_mysql_ip }}:{{ broker_conn_mysql_port }}/{{ broker_conn_mysql_dbname }}?useUnicode=true&characterEncoding=UTF-8&useServerPrepStmts=true&cachePrepStmts=true&autoReconnect=true&socketTimeout=10000
+jdbc.username={{ broker_conn_mysql_username }}
+jdbc.password={{ broker_conn_mysql_password }}
+jdbc.filters=stat
+jdbc.maxActive=100
+jdbc.initialSize=1
+jdbc.connectionErrorRetryAttempts=1
+jdbc.validationQuery=select 1 from dual
+
+store.tableIndexMax=200
+store.bleTableIndexMax=100
+
+#zookeeper
+zookeeper.curator.address={{ zookeeper_addrress }}

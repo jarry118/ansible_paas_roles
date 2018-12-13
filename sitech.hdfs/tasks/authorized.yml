@@ -1,0 +1,30 @@
+---
+- name: Check public key
+  shell: "ls {{ home }}/.ssh|grep '.pub' |wc -l"
+  register: key_exist
+  ignore_errors: true
+
+- name: Generate public key
+  user:
+    name: "{{ hadoop_user }}"
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+  when: "key_exist.stdout == '0'"
+
+- name: Get public from hadoop nodes
+  fetch:
+    src: "{{ home }}/.ssh/id_rsa.pub"
+    dest: "/tmp/id_{{ ansible_host }}.pub"
+    flat: yes
+
+- name: Add hadoop public key for every node
+  authorized_key:
+    user="{{ hadoop_user }}"
+    key="{{ lookup('file', '/tmp/id_{{ item }}.pub') }}"
+  with_items: "{{ groups['all'] }}"
+
+- name: Remove public Key on ansible master
+  shell: "rm -rf /tmp/id_{{ item }}.pub"
+  connection: local
+  with_items: "{{ groups['all'] }}"

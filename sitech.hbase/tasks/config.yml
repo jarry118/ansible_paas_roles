@@ -1,0 +1,46 @@
+---
+- name: Get hadoop home
+  shell: "awk -F= '/export HADOOP_HOME=/{print $NF}' {{ home }}/.bash_profile|head -n 1"
+  register: myvar
+
+- set_fact: hadoop_home="{{ myvar.stdout }}"
+
+- name: Get e3-info home
+  shell: "awk -F= '/export E3_INFO_HOME/{print $NF}' {{ hadoop_home }}/etc/hadoop/hadoop-env.sh|head -n 1"
+  register: myvar
+
+- set_fact: e3_info_home="{{ myvar.stdout }}"
+
+- name: Get java home
+  shell: "awk -F= '/export JAVA_HOME=/{print $NF}' {{ hadoop_home }}/etc/hadoop/hadoop-env.sh|head -n 1"
+  register: myvar
+
+- set_fact: java_home="{{ myvar.stdout }}"
+
+- name: Get cdh5_dfs_nameservices from hdfs-site.xml
+  shell: "sed -n '/<name>dfs.nameservices/,+0{//n;p}' {{ hadoop_home }}/etc/hadoop/hdfs-site.xml|awk -F'[><]' '{print $3}'"
+  register: myvar
+
+- set_fact: cdh5_dfs_nameservices="{{ myvar.stdout }}"
+
+- name: Generate PATH in .bash_profile
+  shell: "echo '{{ item }}' >> {{ home }}/.bash_profile"
+  with_items:
+    - "export HBASE_HOME={{ hbase_home }}"
+    - "export PATH=$HBASE_HOME/bin:$PATH"
+
+- name: Generate hbase configurations
+  template: src={{ item }}.j2 dest={{ hbase_home }}/conf/{{ item }}
+  with_items:
+    - hbase-site.xml
+    - hbase-env.sh
+    - regionservers
+    - backup-masters
+
+- name: Copy core-site.xml to hbase
+  copy: src={{ hadoop_home }}/etc/hadoop/core-site.xml dest={{ hbase_home }}/conf/ remote_src=yes
+
+- name: Copy hdfs-site.xml to hbase
+  copy: src={{ hadoop_home }}/etc/hadoop/hdfs-site.xml dest={{ hbase_home }}/conf/ remote_src=yes
+
+

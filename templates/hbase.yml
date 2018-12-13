@@ -1,0 +1,20 @@
+---
+- hosts: all 
+  gather_facts: true
+  vars:
+    - dynamic:
+        e3base_version: 3.0.0
+        hbase_version: 1.2.0
+        cdh_version: 5.14.0
+        cdh5_region_master_nodes:
+          - 10.243.29.80
+          - 10.243.29.111
+        cdh5_dfs_zookeeper_hosts:
+          - 10.243.29.80 
+          - 10.243.29.111
+          - 10.243.29.129
+        cdh5_dfs_zookeeper_clientport: 2181 
+        cdh5_dfs_zookeeper_peerport: 2881
+        cdh5_dfs_zookeeper_leaderport: 3881
+  roles:
+    - sitech.hbase

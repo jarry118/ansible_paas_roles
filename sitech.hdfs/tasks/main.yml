@@ -1,0 +1,14 @@
+---
+- set_fact: hadoop_user="{{ hadoop_user|default(ansible_user_id) }}"
+- set_fact: hadoop_group="{{ hadoop_group|default(ansible_user_gid) }}"
+- set_fact: hadoop_home="{{ hadoop_home|default(home~'/hadoop')}}"
+- set_fact: e3_info_home="{{ e3_info_home|default(home~'/e3-info')}}"
+- set_fact: hadoop_log_home="{{ e3_info_home }}/hadoop/logs"
+- set_fact: hadoop_pid_home="{{ e3_info_home }}/hadoop/pids"
+- set_fact: hadoop_nn_home="{{ e3_info_home }}/hadoop/nn"
+
+- include: authorized.yml
+- include: upload.yml
+- include: config.yml
+- include: post_action.yml
+- include: start.yml

@@ -1,0 +1,28 @@
+---
+- name: Generate PATH in .bash_profile
+  shell: "echo '{{ item }}' >> {{ home }}/.bash_profile"
+  with_items:
+    - "export HADOOP_HOME={{ hadoop_home }}"
+    - "export PATH=$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$PATH"
+
+- name: Generate cdh5_dfs_zookeeper_quorum setting in core-site.xml
+  shell: |
+    python -c "a={{ cdh5_dfs_zookeeper_hosts }};b={{ cdh5_dfs_zookeeper_clientport }};print(','.join([''.join([x, ':', str(b)]) for x in a]))"
+  register: myvar
+
+- set_fact: cdh5_dfs_zookeeper_quorum="{{ myvar.stdout }}"
+
+- name: Generate hdfs configurations
+  template: src={{ item }}.j2 dest={{ hadoop_home }}/etc/hadoop/{{ item }}
+  with_items:
+    - core-site.xml
+    - hadoop-env.sh
+    - hdfs-site.xml
+    - mapred-env.sh
+    - mapred-site.xml
+    - yarn-env.sh
+    - yarn-site.xml
+    - slaves
+
+- name: Create known_hosts
+  template: src=known_hosts dest={{ home }}/.ssh/known_hosts owner={{ hadoop_user }} group={{ hadoop_group }} mode=0644

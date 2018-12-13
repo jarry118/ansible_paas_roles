@@ -1,0 +1,7 @@
+---
+
+
+
+- name: start broker
+  shell: source ~/.bash_profile;cd {{ install_path }}/idmm-broker/bin/broker;sh startup.sh
+

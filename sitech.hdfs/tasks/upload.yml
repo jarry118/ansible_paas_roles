@@ -1,0 +1,12 @@
+- name: Cleanup {{ hadoop_home }}
+  file: path={{ hadoop_home }} state=absent
+
+- name: unarchive e3base packages
+  unarchive: src={{ hadoop_package }} dest=/tmp
+
+- name: obtain e3base unarchive directory
+  shell: "ls /tmp|grep 'hadoop-{{ hadoop_version }}.*e3base.*{{ e3base_version }}'"
+  register: find_results
+
+- name: move e3base files to {{ hadoop_home }}
+  shell: "mv /tmp/{{ find_results.stdout }} {{ hadoop_home }}"

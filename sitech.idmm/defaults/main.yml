@@ -1,0 +1,22 @@
+idmm_version: 3.0.2
+mysql_version: 5.6.40
+mysql_tarball: mysql-{{ mysql_version }}.tar.gz
+mysql_path: "{{ install_path }}"
+idmm_tarball: "idmm{{ idmm_version }}.tar.gz"
+home: "{{ ansible_user_dir }}"
+zookeeper_root: /idmm
+zookeeper_ble_path: /idmm/ble
+zookeeper_config_version_path: /idmm/configServer/version
+brokerPath: /idmm/httpbroker
+brokerPathZK: /idmm/broker
+blePath: /idmm/ble
+taskLock: /idmm/manager/taskLock
+clearLock: /idmm/manager/clearLock
+monitorLock: /idmm/manager/monitorLock
+messageCountLock: /idmm/manager/messageCountLock
+messageTrapLock: /idmm/manager/messageTrapLock
+versionPath: /idmm/configServer/version
+ble_listen_port: 1159
+broker_conn_mysql_dbname:  idmm
+broker_conn_mysql_username: idmm
+broker_conn_mysql_password: idmm

@@ -1,0 +1,22 @@
+# hadoop version and type setting
+# The type of the node: resourcemanager / nodemanager / datanode / namenode / mrnode
+e3base_version: 3.0.0
+hbase_version: 1.2.0
+cdh_version: 5.14.0
+hbase_package: "hbase-{{ hbase_version }}-cdh{{ cdh_version }}-e3base{{ e3base_version }}.tar.gz"
+
+# need be setting in commands
+# chd5_region_master_nodes:
+#   - localhost
+# cdh5_dfs_zookeeper_hosts
+#   - localhost
+cdh5_dfs_zookeeper_clientport: 2181
+cdh5_dfs_zookeeper_peerport: 2881
+cdh5_dfs_zookeeper_leaderport: 3881
+home: "{{ ansible_user_dir }}"
+hbase_home: "{{home}}/hbase"
+hbase_pid_home: "{{ e3_info_home }}/hbase/pids"
+hbase_log_home: "{{ e3_info_home }}/hbase/logs"
+
+cdh5_hbase_zookeeper_quorum: "{{ cdh5_dfs_zookeeper_hosts|join(',') }}"
+cdh5_region_server_node: "{{ groups['all'] | difference(cdh5_region_master_nodes) }}"

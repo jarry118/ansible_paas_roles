@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://{{ cdh5_dfs_nameservices | default(drmcluster) }}</value>
+    </property>
+    <property>
+        <name>ha.zookeeper.quorum</name>
+        <value>{{ cdh5_dfs_zookeeper_quorum }}</value>
+    </property>
+    <property>
+        <name>io.compression.codecs</name>
+        <value>org.apache.hadoop.io.compress.SnappyCodec</value>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>{{ cdh5_dfs_hadoop_tmp_dir }}</value>
+    </property>
+    <property>
+        <name>io.native.lib.available</name>
+        <value>true</value>
+    </property>
+</configuration>

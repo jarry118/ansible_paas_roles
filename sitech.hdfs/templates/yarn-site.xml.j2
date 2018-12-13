@@ -1,0 +1,376 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>yarn.resourcemanager.ha.rm-ids</name>
+        <value>{{ hadoop_resourcemanager_list | join(',') }}</value>
+    </property>
+
+    <property>
+        <name>yarn.resourcemanager.zk-address</name>
+        <value>{{ cdh5_dfs_zookeeper_quorum }}</value>
+    </property>
+
+<!-- RM configs -->
+{% for host in hadoop_resourcemanager_list %}
+    <property>
+        <name>yarn.resourcemanager.address.{{ host }}</name>
+        <value>{{ host }}:13003</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.scheduler.address.{{ host }}</name>
+        <value>{{ host }}:13004</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.webapp.https.address.{{ host }}</name>
+        <value>{{ host }}:13005</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.webapp.address.{{ host }}</name>
+        <value>{{ host }}:13006</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.resource-tracker.address.{{ host }}</name>
+        <value>{{ host }}:13007</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.admin.address.{{ host }}</name>
+        <value>{{ host }}:13008</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.ha.admin.address.{{ host }}</name>
+        <value>{{ host }}:13009</value>
+    </property>
+{% endfor %}
+
+    <property>
+        <name>yarn.nodemanager.local-dirs</name>
+        <value>{{ cdh5_dfs_datanode_data_dir_list | join('/yarn/local' + ',') }}/yarn/local</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.log-dirs</name>
+        <value>{{ cdh5_dfs_datanode_data_dir_list | join('/yarn/logs' + ',') }}/yarn/logs</value>
+    </property>
+    <property>
+        <name>yarn.admin.acl</name>
+        <value>e3base</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.max-completed-applications</name>
+        <value>30</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.localizer.address</name>
+        <value>0.0.0.0:13001</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.webapp.address</name>
+        <value>0.0.0.0:13002</value>
+    </property>
+
+
+
+    <!-- ResourceManager default configuration properties -->
+    <property>
+        <name>yarn.resourcemanager.resource-tracker.client.thread-count</name>
+        <value>50</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.scheduler.client.thread-count</name>
+        <value>50</value>
+    </property>
+
+    <property>
+        <name>yarn.resourcemanager.nodes.include-path</name>
+        <value>{{ cdh5_yarn_rmnode_include }}</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.nodes.exclude-path</name>
+        <value>{{ cdh5_yarn_rmnode_exclude }}</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.nodemanagers.heartbeat-interval-ms</name>
+        <value>1000</value>
+    </property>
+
+    <!-- cpu and memory -->
+    <property>
+        <name>yarn.scheduler.minimum-allocation-mb</name>
+        <value>1024</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.maximum-allocation-mb</name>
+        <value>8192</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.minimum-allocation-vcores</name>
+        <value>1</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.maximum-allocation-vcores</name>
+        <value>8</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.resource.memory-mb</name>
+        <value>8192</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.resource.cpu-vcores</name>
+        <value>8</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.vmem-pmem-ratio</name>
+        <value>3.1</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.vmem-check-enabled</name>
+        <value>true</value>
+    </property>
+
+    <!-- general config-->
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+        <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.scheduler.class</name>
+        <!--  <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler</value> -->
+        <!-- <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value> -->
+        <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</value>
+    </property>
+    <property>
+        <name>yarn.log-aggregation-enable</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.log-aggregation.retain-seconds</name>
+        <value>864000</value>
+    </property>
+    <property>
+        <name>yarn.log-aggregation.retain-check-interval-seconds</name>
+        <value>86400</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.remote-app-log-dir</name>
+        <value>/hadoop-yarn/aggrelogs</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.remote-app-log-dir-suffix</name>
+        <value>logs</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.scheduler.monitor.enable</name>
+        <value>true</value>
+    </property>
+    <!-- resource manager ha-->
+    <property>
+        <name>yarn.resourcemanager.cluster-id</name>
+        <value>yarn-cluster</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.zk-state-store.parent-path</name>
+        <value>/rmstore</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.ha.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.ha.automatic-failover.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.ha.automatic-failover.embedded</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.recovery.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.store.class</name>
+        <value>org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.connect.retry-interval.ms</name>
+        <value>2000</value>
+    </property>
+    <property>
+        <name>yarn.app.mapreduce.am.scheduler.connection.wait.interval-ms</name>
+        <value>5000</value>
+    </property>
+
+    <!-- linux container
+    <property>
+        <name>yarn.nodemanager.container-executor.class</name>
+        <value>org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor</value>
+        <value>org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.linux-container-executor.resources-handler.class</name>
+        <value>org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.linux-container-executor.cgroups.hierarchy</name>
+        <value>/hadoop-yarn</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.linux-container-executor.cgroups.mount</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.nodemanager.linux-container-executor.cgroups.mount-path</name>
+        <value>/cgroup</value>
+    </property>-->
+
+    <!-- fair scheduler configuration properties -->
+    <property>
+        <name>yarn.scheduler.fair.allocation.file</name>
+        <value>fair-scheduler.xml</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.allow-undeclared-pools</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.user-as-default-queue</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.preemption</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.sizebasedweight</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.assignmultiple</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.max.assign</name>
+        <value>1</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.locality.threshold.node</name>
+        <value>-1.0</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.locality.threshold.rack</name>
+        <value>-1</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.increment-allocation-mb</name>
+        <value>1024</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.increment-allocation-vcores</name>
+        <value>1</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.event-log-enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.locality-delay-node-ms</name>
+        <value>-1</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.locality-delay-rack-ms</name>
+        <value>-1</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.continuous-scheduling-enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.continuous-scheduling-sleep-ms</name>
+        <value>5</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.preemptionInterval</name>
+        <value>5000</value>
+    </property>
+    <property>
+        <name>yarn.scheduler.fair.waitTimeBeforeKill</name>
+        <value>5000</value>
+    </property>
+    <!--
+    <property>
+       <name>yarn.application.classpath</name>
+       <value>/chunk1/chunk/CDH5.2.1/hbase/lib/*.jar,$HADOOP_HOME/etc/hadoop,$HADOOP_HOME/share/hadoop/common/*,$HADOOP_HOME/share/hadoop/common/lib/*,$HADOOP_HOME/share/hadoop/hdfs/*,$HADOOP_HOME/share/hadoop/hdfs/lib/*,$HADOOP_HOME/share/hadoop/yarn/*,$HADOOP_HOME/share/hadoop/yarn/lib/*</value>
+    </property>
+    -->
+    <!-- YARN Timeline Server-->
+    <!--
+    <property>
+        <name>yarn.timeline-service.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.hostname</name>
+        <value>${yarn.resourcemanager.rm1}</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.address</name>
+        <value>${yarn.timeline-service.hostname}:13011</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.webapp.address</name>
+        <value>${yarn.timeline-service.hostname}:13012</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.webapp.https.address</name>
+        <value>${yarn.timeline-service.hostname}:13013</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.handler-thread-count</name>
+        <value>10</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.http-cross-origin.enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.http-cross-origin.allowed-origins</name>
+        <value>*</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.http-cross-origin.allowed-methods</name>
+        <value>GET,POST,HEAD</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.http-cross-origin.allowed-headers</name>
+        <value>X-Requested-With,Content-Type,Accept,Origin</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.http-cross-origin.max-age</name>
+        <value>1800</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.store-class</name>
+        <value>org.apache.hadoop.yarn.server.timeline.LeveldbTimelineStore</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.ttl-enable</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.ttl-ms</name>
+        <value>604800000</value>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.system-metrics-publisher.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>yarn.timeline-service.generic-application-history.enabled</name>
+        <value>true</value>
+    </property>
+    -->
+</configuration>

@@ -1,0 +1,12 @@
+- name: Cleanup {{ hbase_home }}
+  file: path={{ hbase_home }} state=absent
+
+- name: Unarchive hbase packages
+  unarchive: src={{ hbase_package }} dest=/tmp
+
+- name: obtain hbase unarchive directory
+  shell: "ls /tmp|grep 'hbase-{{ hbase_version }}.*e3base.*{{ e3base_version }}'"
+  register: find_results
+
+- name: move hbase files to {{ hbase_home }}
+  shell: "mv /tmp/{{ find_results.stdout }} {{ hbase_home }}"

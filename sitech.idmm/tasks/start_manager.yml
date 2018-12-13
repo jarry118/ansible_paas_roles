@@ -1,0 +1,23 @@
+---
+
+- name: install python setuptools-18.0
+  shell: source ~/.bash_profile;cd {{ install_path }}/soft/setuptools-18.0;python setup.py install --prefix={{ install_path }}/idmm-manager/plugins/.local
+
+- name: install python six-1.9.0
+  shell: source ~/.bash_profile;cd {{ install_path }}/soft/six-1.9.0;python setup.py install --prefix={{ install_path }}/idmm-manager/plugins/.local
+
+- name: install python kazoo-master
+  shell: source ~/.bash_profile;cd {{ install_path }}/soft/kazoo-master;python setup.py install --prefix={{ install_path }}/idmm-manager/plugins/.local
+
+- name: install python MySQL-python-1.2.3b
+  shell: source ~/.bash_profile;cd {{ install_path }}/soft/MySQL-python-1.2.3b1;python setup.py install --prefix={{ install_path }}/idmm-manager/plugins/.local
+
+- name: install python SQLAlchemy-1.0.6
+  shell: source ~/.bash_profile;cd {{ install_path }}/soft/SQLAlchemy-1.0.6;python setup.py install --prefix={{ install_path }}/idmm-manager/plugins/.local
+
+- name: python create_msg_table.py
+  shell: source ~/.bash_profile;cd {{ install_path }}/soft;python create_msg_table.py
+
+- name: start manager
+  shell: source ~/.bash_profile;cd {{ install_path }}/idmm-manager/shell;sh startTask.sh;sh startClean.sh
+

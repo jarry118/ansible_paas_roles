@@ -1,0 +1,38 @@
+export JAVA_HOME={{ java_home }}
+export HADOOP_HOME={{ hadoop_home }}
+export E3_INFO_HOME={{ e3_info_home }}
+export HADOOP_LOG_DIR={{ hadoop_log_home }}
+export HADOOP_PID_DIR={{ hadoop_pid_home }}
+
+export HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-"/etc/hadoop"}
+for f in $HADOOP_HOME/contrib/capacity-scheduler/*.jar; do
+  if [ "$HADOOP_CLASSPATH" ]; then
+    export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$f
+  else
+    export HADOOP_CLASSPATH=$f
+  fi
+done
+
+for f in $HBASE_HOME/lib/hbase*.jar; do
+  if [ "$HADOOP_CLASSPATH" ]; then
+    export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$f
+  else
+    export HADOOP_CLASSPATH=$f
+  fi
+done
+
+export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HBASE_HOME/lib/htrace-core-3.2.0-incubating.jar:$HBASE_HOME/lib/high-scale-lib-1.1.1.jar:$HBASE_HOME/lib/htrace-core4-4.0.1-incubating.jar
+export HADOOP_HEAPSIZE={{ ansible_memtotal_mb//4 }}
+export HADOOP_OPTS="$HADOOP_OPTS -Djava.net.preferIPv4Stack=true"
+export HADOOP_NAMENODE_OPTS="-Xmx{{ ansible_memtotal_mb//2 }}m -Xms{{ ansible_memtotal_mb//2 }}m  -Dhadoop.security.logger=${HADOOP_SECURITY_LOGGER:-INFO,RFAS} -Dhdfs.audit.logger=${HDFS_AUDIT_LOGGER:-INFO,NullAppender} -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=12010 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false $HADOOP_NAMENODE_OPTS"
+export HADOOP_DATANODE_OPTS=" -server -Xmx{{ ansible_memtotal_mb//2 }}m -Xms{{ ansible_memtotal_mb//2 }}m  -Xmn1536m -XX:SurvivorRatio=1 -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+CMSParallelRemarkEnabled  -XX:+UseCMSCompactAtFullCollection  -XX:+UseCMSInitiatingOccupancyOnly -XX:-DisableExplicitGC -Dhadoop.security.logger=ERROR,RFAS -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=12011 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false $HADOOP_DATANODE_OPTS"
+
+export HADOOP_NFS3_OPTS="$HADOOP_NFS3_OPTS"
+export HADOOP_PORTMAP_OPTS="-Xmx512m $HADOOP_PORTMAP_OPTS"
+export HADOOP_CLIENT_OPTS="-Xmx512m $HADOOP_CLIENT_OPTS"
+export HADOOP_SECURE_DN_USER=${HADOOP_SECURE_DN_USER}
+export HADOOP_SECURE_DN_LOG_DIR=${HADOOP_LOG_DIR}/${HADOOP_HDFS_USER}
+export HADOOP_PID_DIR=${HADOOP_PID_DIR}
+export HADOOP_SECURE_DN_PID_DIR=${HADOOP_PID_DIR}
+export HADOOP_IDENT_STRING=$USER
+export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native/:$HADOOP_HOME/share/hadoop/common/lib:$LD_LIBRARY_PATH

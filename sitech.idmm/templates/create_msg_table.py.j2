@@ -1,0 +1,166 @@
+# -*- coding: UTF-8 -*-
+
+import MySQLdb
+import string
+
+msgcount=200
+msgidxcount=100
+
+try:
+    conn=MySQLdb.connect(host='{{ broker_conn_mysql_ip }}',user='{{ broker_conn_mysql_username }}',passwd='{{ broker_conn_mysql_password }}',db='{{ broker_conn_mysql_dbname }}',charset='utf8',port={{ broker_conn_mysql_port }})
+    cur=conn.cursor()
+    cur_idx=conn.cursor()
+    
+    for i in range(msgcount):
+        table='messagestore_%d' %i
+        print 'create table: %s' %table
+        
+        sql='DROP TABLE IF EXISTS %s' %(table)
+        cur.execute(sql)
+        sql="""CREATE TABLE %s (
+               id varchar(128) NOT NULL,
+               properties varchar(2048) DEFAULT NULL,
+               systemProperties varchar(1024) DEFAULT NULL,
+               content mediumblob,
+               createtime bigint(20),
+               PRIMARY KEY (id)
+             ) ENGINE=InnoDB DEFAULT CHARSET=utf8""" %(table)
+        #print '%s' %sql
+        cur.execute(sql)
+    
+    print '--------------------------------------------\n'
+    for i in range(msgidxcount):
+        table='msgidx_part_%d' %i
+        print 'create table: %s' %table
+        
+        sql='DROP TABLE IF EXISTS %s' %(table)
+        cur.execute(sql)
+        sql="""CREATE TABLE %s (
+               idmm_msg_id varchar(60) NOT NULL COMMENT 'idmm创建的消息id',
+               produce_cli_id varchar(32) DEFAULT NULL,
+               src_topic_id varchar(32) DEFAULT NULL,
+               dst_cli_id varchar(32) NOT NULL,
+               dst_topic_id varchar(32) NOT NULL,
+               src_commit_code char(4) DEFAULT NULL,
+               group_id varchar(32) DEFAULT NULL COMMENT '分组号, 允许为null, 为null时则不以group_id分组及在途消息管理',
+               priority int(11) NOT NULL DEFAULT '100' COMMENT '优先级',
+               idmm_resend int(11) DEFAULT NULL,
+               consumer_resend int(11) DEFAULT NULL COMMENT '消费者重发次数',
+               create_time bigint(20) DEFAULT NULL COMMENT '生产消息提交时间, 恢复内存时按此字段排序',
+               broker_id varchar(21) DEFAULT NULL COMMENT '消费Broker节点id，存储Broker的ip与地址',
+               req_time bigint(20) DEFAULT NULL COMMENT '消费请求时间',
+               commit_code char(4) DEFAULT NULL COMMENT '消费提交代码',
+               commit_time bigint(20) DEFAULT NULL COMMENT '费提交时间',
+               commit_desc varchar(160) DEFAULT NULL COMMENT '消费结果描述',
+               next_topic_id varchar(32) DEFAULT NULL COMMENT '顺序消费的下一个目标主题',
+               next_client_id varchar(32) DEFAULT NULL COMMENT '顺序消费的下一个消费者， 需要与next_topic_id 一起出现， 并有订阅关系',
+               PRIMARY KEY (idmm_msg_id,dst_cli_id,dst_topic_id),
+               KEY Index1 (dst_cli_id,dst_topic_id)
+             ) ENGINE=InnoDB DEFAULT CHARSET=utf8""" %(table)
+        #print '%s' %sql
+        cur.execute(sql)
+    
+    for i in range(msgidxcount):
+        table='msgidx_part_his_%d' %i
+        print 'create table: %s' %table
+        
+        sql='DROP TABLE IF EXISTS %s' %(table)
+        cur.execute(sql)
+        sql="""CREATE TABLE %s (
+              idmm_msg_id varchar(60) NOT NULL COMMENT 'idmm创建的消息id',
+              produce_cli_id varchar(32) DEFAULT NULL,
+              src_topic_id varchar(32) DEFAULT NULL,
+              dst_cli_id varchar(32) DEFAULT NULL,
+              dst_topic_id varchar(32) DEFAULT NULL,
+              src_commit_code char(4) DEFAULT NULL,
+              group_id varchar(32) DEFAULT NULL COMMENT '分组号, 允许为null, 为null时则不以group_id分组及在途消息管理',
+              priority int(11) NOT NULL DEFAULT '100' COMMENT '优先级',
+              idmm_resend int(11) DEFAULT NULL,
+              consumer_resend int(11) DEFAULT NULL COMMENT '消费者重发次数',
+              create_time bigint(20) DEFAULT NULL COMMENT '生产消息提交时间, 恢复内存时按此字段排序',
+              broker_id varchar(21) DEFAULT NULL COMMENT '消费Broker节点id，存储Broker的ip与地址',
+              req_time bigint(20) DEFAULT NULL COMMENT '消费请求时间',
+              commit_code char(4) DEFAULT NULL COMMENT '消费提交代码',
+              commit_time bigint(20) DEFAULT NULL COMMENT '费提交时间',
+              commit_desc varchar(160) DEFAULT NULL COMMENT '消费结果描述',
+              next_topic_id varchar(32) DEFAULT NULL COMMENT '顺序消费的下一个目标主题',
+              next_client_id varchar(32) DEFAULT NULL COMMENT '顺序消费的下一个消费者， 需要与next_topic_id 一起出现， 并有订阅关系',
+              INDEX Index1 (idmm_msg_id, dst_cli_id, dst_topic_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8""" %(table)
+        #print '%s' %sql
+        cur.execute(sql)
+    
+    print 'create table: msgidx_part_err'
+    
+    sql='DROP TABLE IF EXISTS msgidx_part_err'
+    cur.execute(sql)
+    sql="""CREATE TABLE msgidx_part_err (
+          idmm_msg_id varchar(60) NOT NULL COMMENT 'idmm创建的消息id',
+          produce_cli_id varchar(32) DEFAULT NULL,
+          src_topic_id varchar(32) DEFAULT NULL,
+          dst_cli_id varchar(32) NOT NULL,
+          dst_topic_id varchar(32) NOT NULL,
+          src_commit_code char(4) DEFAULT NULL,
+          group_id varchar(32) DEFAULT NULL COMMENT '分组号, 允许为null, 为null时则不以group_id分组及在途消息管理',
+          priority int(11) NOT NULL DEFAULT '100' COMMENT '优先级',
+          idmm_resend int(11) DEFAULT NULL,
+          consumer_resend int(11) DEFAULT NULL COMMENT '消费者重发次数',
+          create_time bigint(20) DEFAULT NULL COMMENT '生产消息提交时间, 恢复内存时按此字段排序',
+          broker_id varchar(21) DEFAULT NULL COMMENT '消费Broker节点id，存储Broker的ip与地址',
+          req_time bigint(20) DEFAULT NULL COMMENT '消费请求时间',
+          commit_code char(4) DEFAULT NULL COMMENT '消费提交代码',
+          commit_time bigint(20) DEFAULT NULL COMMENT '费提交时间',
+          commit_desc varchar(160) DEFAULT NULL COMMENT '消费结果描述',
+          next_topic_id varchar(32) DEFAULT NULL COMMENT '顺序消费的下一个目标主题',
+          next_client_id varchar(32) DEFAULT NULL COMMENT '顺序消费的下一个消费者， 需要与next_topic_id 一起出现， 并有订阅关系',
+          PRIMARY KEY (idmm_msg_id,dst_cli_id,dst_topic_id),
+          KEY Index1 (dst_cli_id,dst_topic_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8"""
+    cur.execute(sql)
+    
+    print 'create table: message_notfound'
+    
+    sql='DROP TABLE IF EXISTS message_notfound'
+    cur.execute(sql)
+    sql="""CREATE TABLE message_notfound (
+           id varchar(128) NOT NULL,
+           found_time bigint(20) default 0,
+           next_scan_time bigint(20) default 0 comment '下次扫描时间',
+           scan_retries int default 0,
+           PRIMARY KEY (id),
+           KEY index1 (next_scan_time)
+         ) ENGINE=InnoDB DEFAULT CHARSET=utf8"""
+    cur.execute(sql)
+    
+    print 'create table: message_notfound_his'
+    
+    sql='DROP TABLE IF EXISTS message_notfound_his'
+    cur.execute(sql)
+    sql="""CREATE TABLE message_notfound_his (
+          id varchar(128) NOT NULL,
+          found_time bigint(20) default 0,
+          next_scan_time bigint(20) default 0 comment '下次扫描时间',
+          scan_retries int default 0,
+          PRIMARY KEY (id),
+          KEY index1 (next_scan_time)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8"""
+    cur.execute(sql)
+    
+    print 'create table: ble_not_found'
+    
+    sql='DROP TABLE IF EXISTS ble_not_found'
+    cur.execute(sql)
+    sql="""CREATE TABLE ble_not_found (
+          msg_id varchar(128) NOT NULL,
+          dest_topic_id char(32) NOT NULL,
+          properties varchar(4096) NOT NULL,
+          op_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          PRIMARY KEY (msg_id,dest_topic_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8"""
+    cur.execute(sql)
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+except MySQLdb.Error,e:
+    print 'MySQLdb Error, %s' %e

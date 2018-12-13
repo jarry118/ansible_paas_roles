@@ -1,0 +1,4 @@
+---
+- name: Startup
+  shell: "{{ hbase_home }}/bin/start-hbase.sh"
+  when: ansible_default_ipv4['address'] == chd5_region_master_nodes|first

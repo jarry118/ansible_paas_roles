@@ -1,0 +1,4 @@
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://{{ broker_conn_mysql_ip }}:{{ broker_conn_mysql_port }}/{{ broker_conn_mysql_dbname}}?allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8
+user={{ broker_conn_mysql_username }}
+password={{ broker_conn_mysql_password }}

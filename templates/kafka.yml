@@ -1,0 +1,16 @@
+---
+- hosts: all 
+  gather_facts: true
+  vars:
+    - dynamic:
+        kafka_version: 2.12-1.1.0
+        client_port: 2181
+        listeners_port: 9092
+        install_path: /dmdb
+        zookeeper_hosts:
+          - 10.243.29.80 
+          - 10.243.29.111
+          - 10.243.29.129
+        zookeeper_clientport: 2181 
+  roles:
+    - kafka

@@ -1,0 +1,62 @@
+# hadoop version and type setting
+# The type of the node: resourcemanager / nodemanager / datanode / namenode / mrnode
+e3base_version: 3.0.0
+hadoop_version: 2.6.0
+cdh_version: 5.14.0
+hadoop_package: hadoop-{{ hadoop_version }}-cdh{{ cdh_version }}-e3base{{ e3base_version }}.tar.gz
+
+# need be setting in commands
+# hadoop_namenodes_list:
+#   - localhost
+# hadoop_resourcemanager_list:
+#   - localhost
+# hadoop_journalnode_list:
+#   - localhost
+# hadoop_mapreduce_node: localhost
+# cdh5_dfs_zookeeper_hosts
+#   - localhost
+# cdh5_dfs_zookeeper_clientport: 2181
+
+home: "{{ ansible_user_dir }}"
+
+# optional dfs setting for each configuration file
+# hadoop-env.sh.j2
+
+# core-site.xml.j2
+# require vars:
+# cdh5_dfs_zookeeper_hosts, cdh5_dfs_zookeeper_clientport
+# cdh5_dfs_zookeeper_quorum will create in config.yml
+cdh5_dfs_nameservices: drmcluster
+cdh5_dfs_hadoop_tmp_dir: "{{ e3_info_home }}/hadoop/tmp/hadoop-${user.name}"
+
+# hdfs-site.xml
+# require vars:
+# cdh5_dfs_nameservices, hadoop_namenodes_list, ansible_user_dir, hadoop_home
+# hadoop_journalnode_list
+cdh5_dfs_journalnode_edits_dir: "{{ e3_info_home }}/hadoop/jn"
+cdh5_dfs_namenode_name_dir: "{{ e3_info_home }}/hadoop/nn"
+cdh5_dfs_datanode_data_dir_list:
+  - /data1
+  - /data2
+  - /data3
+cdh5_dfs_hosts_exclude: "{{ hadoop_home }}/etc/hadoop/dn-exclude"
+cdh5_dfs_hosts: "{{ hadoop_home }}/etc/hadoop/dn-include"
+
+# yarn-site.xml
+# require vars:
+# cdh5_dfs_datanode_data_dir_list, hadoop_resourcemanager_list, chd5_dfs_zookeeper_quorum
+cdh5_yarn_rmnode_include: "{{ hadoop_home }}/etc/hadoop/nm-include"
+cdh5_yarn_rmnode_exclude: "{{ hadoop_home }}/etc/hadoop/nm-exclude"
+#chd5_dfs_zookeeper_quorum: "{{ cdh5_dfs_zookeeper_hosts|join(':'~cdh5_dfs_zookeeper_clientport~',') }}:{{ cdh5_dfs_zookeeper_clientport }}"
+
+# hadoop-env.sh.j2
+# require vars:
+# java_home, hadoop_home, e3_info_home, hadoop_log_home, hadoop_pid_home
+
+# mapred-env.sh
+# require vars:
+# java_home hadoop_home e3e3_info_home
+
+# mapred-site.xml
+# require hadoop_type_of_node is equal to mrnode
+# the ip address of mrnode

@@ -1,0 +1,46 @@
+---
+- name: Create hadoop_log_home
+  file: path={{ hadoop_log_home }} state=directory owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+
+- name: Create hadoop_pid_home
+  file: path={{ hadoop_pid_home }} state=directory owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+
+- name: Create cdh5 datanode data directory
+  file: path={{ item }}/hdfs state=directory owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+  with_items: "{{ cdh5_dfs_datanode_data_dir_list }}"
+
+- name: Create cdh5_dfs_journalnode_edits_dir
+  file: path={{ cdh5_dfs_journalnode_edits_dir }} state=directory owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+
+- name: Create cdh5_dfs_namenode_name_dir
+  file: path={{ cdh5_dfs_namenode_name_dir }} state=directory owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+
+- name: Create cdh5_dfs_hosts_exclude
+  file: path={{ cdh5_dfs_hosts_exclude }} owner={{ hadoop_user }} group={{ hadoop_group }} mode=770
+
+- name: Create cdh5_dfs_hosts
+  file: path={{ cdh5_dfs_hosts }} owner={{ hadoop_user }} group={{ hadoop_group }} mode=770
+
+- name: Create cdh5_yarn_rmnode_include
+  file: path={{ cdh5_yarn_rmnode_include }} owner={{ hadoop_user }} group={{ hadoop_group }} mode=770
+
+- name: Create cdh5_yarn_rmnode_exclude
+  file: path={{ cdh5_yarn_rmnode_exclude }} owner={{ hadoop_user }} group={{ hadoop_group }} mode=770
+
+- name: "Ensure owner to {{ hadoop_user }} and {{ hadoop_group }}"
+  file: dest={{ hadoop_home }} owner={{ hadoop_user }} group={{ hadoop_group }} mode=770 recurse=yes
+
+- name: Reflash all under {{ hadoop_home }} owner and group to {{ hadoop_user }}:{{ hadoop_group }} and permission to 755
+  file: path={{ hadoop_home }} mode=755 owner={{ hadoop_user }} group={{ hadoop_group }} recurse=yes
+
+- name: Reflash all subdirectory's permission to 755
+  shell: "find {{ hadoop_home }} -type d|xargs -i chmod 755 {}"
+
+- name: Reflash all files' permission to 640
+  shell: "find {{ hadoop_home }} -type f|xargs -i chmod 640 {}"
+
+- name: Reflash all scripts's permission to 750
+  shell: "find {{ hadoop_home }} -type f|egrep '((.sh)|(.cmd)|(.rb))'|xargs -i chmod 750 {}"
+
+- name: Reflash all executable file's permission to 750
+  shell: "find {{ hadoop_home }}/bin {{ hadoop_home }}/sbin -type f|xargs -i chmod 750 {}"

@@ -1,0 +1,6 @@
+---
+
+
+
+- name: create idmm version in zk
+  shell: echo 'create /idmm/configServer/version 1'|{{ install_path }}/idmm-zk/bin/zkCli.sh -server {{ zookeeper_addrress }}

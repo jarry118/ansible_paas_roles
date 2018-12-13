@@ -1,0 +1,8 @@
+---
+- set_fact: hadoop_user="{{ hadoop_user|default(ansible_user_id) }}"
+- set_fact: hadoop_group="{{ hadoop_group|default(ansible_user_gid) }}"
+
+- include: upload.yml
+- include: config.yml
+- include: post_action.yml
+- include: start.yml

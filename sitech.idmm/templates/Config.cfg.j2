@@ -1,0 +1,89 @@
+#http服务端口
+[server]
+port=9990
+
+#zk地址 以及相关路径
+[zk]
+url={{ zookeeper_addrress }}
+timeout=10
+brokerPath={{ brokerPath }}
+brokerPathZK={{ brokerPathZK }}
+blePath = {{ blePath }}
+taskLock= {{ taskLock }}
+clearLock= {{ clearLock }}
+monitorLock= {{ monitorLock }}
+messageCountLock={{ messageCountLock }}
+messageTrapLock={{ messageTrapLock }}
+versionPath= {{ versionPath }}
+
+#数据库连接串
+[db]
+DB_CONNECT_STRING = mysql+mysqldb://{{ broker_conn_mysql_username }}:{{ broker_conn_mysql_password }}@{{ broker_conn_mysql_ip }}:{{ broker_conn_mysql_port }}/{{ broker_conn_mysql_dbname }}?charset=utf8
+db_host={{ broker_conn_mysql_ip }}
+db_port={{ broker_conn_mysql_port }}
+db_user={{ broker_conn_mysql_username }}
+db_passwd={{ broker_conn_mysql_password }}
+db_dbname={{ broker_conn_mysql_dbname }}
+db_charset=utf8
+
+#日志路径
+[log]
+logfile=log/manager
+httplogfile=log/httpsend
+serverlogfile=log/server
+
+#task进程线程数
+[thread]
+count=10
+
+#消息表个数，查询索引表时是否开启多线程
+[msgstore]
+num=200
+step=10
+mutil=ON
+
+#索引表个数，查询索引表时是否开启多线程
+[msgidx]
+num=100
+mutil=ON
+
+#broker+ble提供url地址
+[url]
+send=http://[brokerAddr]/SEND
+send_commit=http://[brokerAddr]/SEND_COMMIT
+
+pull=http://[brokerAddr]/PULL
+pull_commit=http://[brokerAddr]/PULL
+
+exec=http://[bleAddr]/jolokia/exec/com.sitech.crmpd.idmm.ble.RunTime:name=runTime
+            
+[brokerurl]
+monitorUrl=http://[brokerAddr]/jolokia/read/java.lang:type=OperatingSystem/SystemCpuLoad
+tpsUrl=http://[brokerAddr]/jolokia/read/metrics:name=com.sitech.crmpd.idmm.broker.handler.[tpsType].handle/OneMinuteRate
+tpsType=QueryMessageHandler,PullMessageHandler,SendRollbackMessageHandler,SendMessageHandler,DeleteMessageHandler,SendCommitMessageHandler
+msgSendCountUrl=http://[brokerAddr]/jolokia/read/metrics:name=com.sitech.crmpd.idmm.broker.handler.SendMessageHandler.handle/Count
+msgSendCommitCountUrl=http://[brokerAddr]/jolokia/read/metrics:name=com.sitech.crmpd.idmm.broker.handler.SendCommitMessageHandler.handle/Count
+msgRcvCountUrl=http://[brokerAddr]/jolokia/read/metrics:name=com.sitech.crmpd.idmm.broker.handler.PullMessageHandler.handle/Count
+msgRcvCommitCountUrl=http://[brokerAddr]/jolokia/read/metrics:name=com.sitech.crmpd.idmm.broker.handler.PullMessageHandler.handle/Count
+hostCpuUseUrl=http://[brokerAddr]/jolokia/read/java.lang:type=OperatingSystem/SystemCpuLoad
+hostFreeMemUrl=http://[brokerAddr]/jolokia/read/java.lang:type=OperatingSystem/FreePhysicalMemorySize
+hostTotalMemUrl=http://[brokerAddr]/jolokia/read/java.lang:type=OperatingSystem/TotalPhysicalMemorySize
+clientInfoUrl=http://[brokerAddr]/jolokia/read/com.sitech.crmpd.idmm.broker:name=logicHandler/RemoteAddresses				
+hostMaxFileDescriptorCount = http://[brokerAddr]/jolokia/read/java.lang:type=OperatingSystem/MaxFileDescriptorCount
+hostOpenFileDescriptorCount = http://[brokerAddr]/jolokia/read/java.lang:type=OperatingSystem/OpenFileDescriptorCount
+
+[bleurl]
+QueueNameUrl=http://[bleAddr]/jolokia/exec/com.sitech.crmpd.idmm.ble.RunTime:name=runTime/info
+seqUrl=http://[bleAddr]/jolokia/exec/com.sitech.crmpd.idmm.ble.RunTime:name=runTime/lockdetail/[subId]/[dstTopicId]
+monitorUrl=http://[bleAddr]/jolokia/read/java.lang:type=OperatingSystem/SystemCpuLoad
+clientInfoUrl = http://[bleAddr]/jolokia/exec/com.sitech.crmpd.idmm.ble.RunTime:name=runTime/getClientCount
+tpsUrl = http://[bleAddr]/jolokia/read/metrics:name=com.sitech.crmpd.idmm.ble.BLEHandler.channelRead/OneMinuteRate
+hostCpuUseUrl=http://[bleAddr]/jolokia/read/java.lang:type=OperatingSystem/SystemCpuLoad		
+hostFreeMemUrl = http://[bleAddr]/jolokia/read/java.lang:type=OperatingSystem/FreePhysicalMemorySize
+hostTotalMemUrl = http://[bleAddr]/jolokia/read/java.lang:type=OperatingSystem/TotalPhysicalMemorySize	
+hostMaxFileDescriptorCount = http://[bleAddr]/jolokia/read/java.lang:type=OperatingSystem/MaxFileDescriptorCount
+hostOpenFileDescriptorCount = http://[bleAddr]/jolokia/read/java.lang:type=OperatingSystem/OpenFileDescriptorCount
+
+
+[kafka]
+path=/crmpdscm/idmm3/kafka0.8.2

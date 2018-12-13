@@ -1,0 +1,102 @@
+---
+
+
+
+- name: check if install_path directory exists
+  stat:
+    path: "{{ install_path }}"
+  register: logdir
+  changed_when: false
+  when: install_path != '""'
+
+- name: create install_path directory if it does not exist
+  file:
+    state: directory
+    path: "{{ install_path }}"
+  when:
+    - install_path != '""'
+    - not logdir.stat.exists
+
+- name: upload idmm tarball
+  copy:
+    src: "{{ idmm_tarball }}"
+    dest: "{{ install_path }}/{{ idmm_tarball }}"
+  when: idmm_tarball|default(false)
+
+- name: upload mysql client tarball
+  copy:
+    src: "{{ mysql_tarball }}"
+    dest: "{{ install_path }}/{{ mysql_tarball }}"
+  when: mysql_tarball|default(false)
+
+- name: extract idmm tarball
+  unarchive:
+    src: "{{ install_path }}/{{ idmm_tarball }}"
+    dest: "{{ install_path }}"
+    copy: no
+
+- name: extract mysql tarball
+  unarchive:
+    src: "{{ install_path }}/{{ mysql_tarball }}"
+    dest: "{{ install_path }}"
+    copy: no
+
+- name: config idmm broker config file
+  template:
+    src: server-mysql.properties.j2
+    dest: "{{ install_path }}/idmm-broker/config/broker/server-mysql.properties"
+    mode: 0644
+
+- name: config idmm ble config file
+  template:
+    src: server-ble-mysql.properties.j2
+    dest: "{{ install_path }}/idmm-broker/config/ble/server-ble-mysql.properties"
+    mode: 0644
+
+- name: config idmm manager config file
+  template:
+    src: Config.cfg.j2
+    dest: "{{ install_path }}/idmm-manager/config/Config.cfg"
+    mode: 0644
+
+- name: config idmm web config file config.properties
+  template:
+    src: config.properties.j2
+    dest: "{{ install_path }}/idmm-web/webapps/idmm-web/WEB-INF/classes/com/sitech/crmpd/idmm2/web/config/config.properties"
+    mode: 0644
+
+- name: config idmm web config file jdbc.properties
+  template:
+    src: jdbc.properties.j2
+    dest: "{{ install_path }}/idmm-web/webapps/idmm-web/WEB-INF/classes/com/sitech/crmpd/idmm2/web/config/jdbc.properties"
+    mode: 0644
+
+- name: upload create.sql
+  copy:
+    src: create.sql
+    dest: "{{ install_path }}/soft"
+
+- name: upload init.sql
+  copy:
+    src: init.sql
+    dest: "{{ install_path }}/soft"
+
+- name: config create_msg_table.py file
+  template:
+    src: create_msg_table.py.j2
+    dest: "{{ install_path }}/soft/create_msg_table.py"
+    mode: 0644
+- name: config LANG
+  shell: sed -i '/LANG/d' ~/.bash_profile;echo 'export JAVA_HOME=en_US.utf8'>>~/.bash_profile
+
+- name: config mysql_home
+  shell: sed -i '/mysql_home/d' ~/.bash_profile;echo 'export mysql_home={{ install_path }}/mysql-{{ mysql_version }}'>>~/.bash_profile;echo 'export PATH=$mysql_home/bin:$PATH'>>~/.bash_profile
+
+- name: config JAVA_HOME
+  shell: sed -i '/JAVA_HOME/d' ~/.bash_profile;echo 'export JAVA_HOME={{ java_home }}'>>~/.bash_profile;echo 'export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$CLASSPATH'>>~/.bash_profile;echo 'export PATH=$JAVA_HOME/bin:$PATH'>>~/.bash_profile
+
+- name: config PYTHONPATH
+  shell: sed -i '/PYTHONPATH/d' ~/.bash_profile;echo 'export PYTHONPATH={{ install_path }}/idmm-manager/plugins/.local:{{ install_path }}/idmm-manager/plugins/.local/lib/python2.6/site-packages:{{ install_path }}/idmm-manager/plugins/.local/lib64/python2.6/site-packages:{{ install_path }}/idmm-manager/plugins/.local/lib/python2.7/site-packages:{{ install_path }}/idmm-manager/plugins/.local/lib64/python2.7/site-packages:$PYTHONPATH'>>~/.bash_profile
+ 
+- name: make python plugins dir
+  shell : mkdir -p {{ install_path }}/idmm-manager/plugins/.local/lib/python2.6/site-packages;mkdir -p {{ install_path }}/idmm-manager/plugins/.local/lib64/python2.6/site-packages;mkdir -p {{ install_path }}/idmm-manager/plugins/.local/lib/python2.7/site-packages;mkdir -p {{ install_path }}/idmm-manager/plugins/.local/lib64/python2.7/site-packages

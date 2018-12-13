@@ -1,0 +1,20 @@
+---
+- name: Initialize journalnode
+  shell: "{{ hadoop_home }}/sbin/hadoop-daemon.sh start journalnode"
+  when: ansible_default_ipv4['address'] in hadoop_journalnode_list
+
+- name: Initialize namenode
+  shell: "echo yes|{{ hadoop_home }}/bin/hdfs namenode -format"
+  when: ansible_default_ipv4['address'] == hadoop_namenodes_list|first
+
+- name: Sync data between master namenode and standby namenodes
+  shell: "scp -r {{ hadoop_namenodes_list|first }}:{{ cdh5_dfs_namenode_name_dir }} {{ e3_info_home }}/hadoop"
+  when: ansible_default_ipv4['address'] in hadoop_namenodes_list and ansible_default_ipv4['address'] != hadoop_namenodes_list|first
+
+- name: Initialize zkfs
+  shell: yes|{{ hadoop_home }}/bin/hdfs zkfc -formatZK
+  when: ansible_default_ipv4['address'] == hadoop_namenodes_list|first
+
+- name: Startup
+  shell: "{{ hadoop_home }}/sbin/start-dfs.sh"
+  when: ansible_default_ipv4['address'] == hadoop_namenodes_list|first

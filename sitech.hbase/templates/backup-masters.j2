@@ -1,0 +1,5 @@
+{% for item in cdh5_region_master_nodes %}
+{% if item != ansible_default_ipv4['address'] %}
+{{item}}
+{% endif %}
+{% endfor %}

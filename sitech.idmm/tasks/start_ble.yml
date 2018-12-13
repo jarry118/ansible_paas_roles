@@ -1,0 +1,7 @@
+---
+
+
+
+- name: start ble
+  shell: source ~/.bash_profile;cd {{ install_path }}/idmm-broker/bin/ble;sh startup.sh
+

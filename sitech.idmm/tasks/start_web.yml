@@ -1,0 +1,6 @@
+---
+
+
+- name: start web
+  shell: source ~/.bash_profile;cd {{ install_path }}/idmm-web/bin;nohup sh startup.sh &
+
