@@ -28,7 +28,7 @@ zookeeper_hosts_hostname: "{{inventory_hostname}}"
 zookeeper_hosts: "
     {%- set ips = [] %}
     {%- for host in groups['all'] %}
-    {{- ips.append(dict(id=loop.index, host=host, ip=hostvars[host]['ansible_default_ipv4'].address)) }}
+    {{- ips.append(dict(id=loop.index, host=host, ip=hostvars[host]['ansible_default_ipv4']['address'])) }}
     {%- endfor %}
     {{- ips -}}"
 
